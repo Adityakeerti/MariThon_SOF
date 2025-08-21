@@ -1,0 +1,49 @@
+COMMENCE:
+  - commenced loading
+  - commencement of laytime
+  - start loading
+  - arrived berth commence
+STOP:
+  - stopped loading
+  - suspend operations
+  - laytime stopped
+  - cease work
+RESUME:
+  - resumed loading
+  - resume operations
+  - continue work
+COMPLETE:
+  - completed loading
+  - all fast complete
+  - loading finished
+ARRIVAL:
+  - vessel arrived
+  - arrived at port
+  - notice of readiness tendered
+NOR_TENDERED:
+  - nor tendered
+  - tender notice of readiness
+NOR_ACCEPTED:
+  - nor accepted
+  - notice of readiness accepted
+SHIFTING:
+  - shifting berth
+  - shifted to anchorage
+ANCHOR_DOWN:
+  - anchored
+  - anchor dropped
+ANCHOR_UP:
+  - heaved up anchor
+  - anchor aweigh
+GANGWAY_DOWN:
+  - gangway down
+  - gangway placed
+GANGWAY_UP:
+  - gangway up
+  - gangway removed
+DRAFT_SURVEY_START:
+  - draft survey start
+  - initial draft survey
+DRAFT_SURVEY_END:
+  - draft survey end
+  - final draft survey

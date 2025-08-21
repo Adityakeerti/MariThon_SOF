@@ -1,0 +1,17 @@
+# Main Directory Requirements
+# This file contains dependencies for the main project directory
+
+# Core Python utilities
+pip>=21.0.0
+setuptools>=65.0.0
+wheel>=0.37.0
+
+# Development tools (optional)
+# pytest>=7.0.0
+# black>=22.0.0
+# flake8>=5.0.0
+
+# Note: The backend has its own requirements.txt file in the backend/ directory
+# Always activate the appropriate virtual environment:
+# - backend/venv for backend development
+# - .venv for main directory tools

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Laytime Calculator • Cargo Laytime</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/theme.css" />
+	<link rel="stylesheet" href="assets/css/extraction-results.css" />
+</head>
+<body>
+	<header class="header">
+		<div class="container nav">
+			<a class="brand" href="index.html">
+				<span class="brand-badge">CL</span>
+				<span>Cargo Laytime</span>
+			</a>
+			<div class="nav-cta">
+				<a class="btn btn-ghost" href="dashboard.html">Dashboard</a>
+				<div class="profile-chip"><span class="avatar">U</span><div><div id="profile-name">User</div><div class="role" id="profile-role">Member</div></div></div>
+			</div>
+		</div>
+	</header>
+
+	<main class="workspace">
+		<div class="workspace-card">
+			<div class="topbar">
+				<div class="breadcrumb">
+					<a href="dashboard.html">Dashboard</a> / <span>Laytime Calculator</span>
+				</div>
+				<div class="actions">
+					<button class="action-btn" onclick="window.history.back()">Back</button>
+					<button class="action-btn">Help</button>
+				</div>
+			</div>
+
+			<!-- Split Layout: Form on Left, Results on Right -->
+			<div class="split-layout">
+				<!-- Left Panel: Fetched Data Form -->
+				<div class="left-panel">
+					<div class="panel-header">
+						<h2>Laytime Calculator</h2>
+						<div class="success-banner">
+							<div class="success-icon">✅</div>
+							<div>
+								<h3>SoF/CP was uploaded successfully</h3>
+								<p>Please verify the following details and click on "Calculate"</p>
+							</div>
+						</div>
+					</div>
+					
+					<div class="data-form" id="data-form">
+						<div class="form-grid">
+							<div class="form-item">
+								<label class="label">CREATED FOR</label>
+								<input class="input-sm" id="f-vessel" placeholder="Vessel / Account name" />
+							</div>
+							<div class="form-item">
+								<label class="label">VOYAGE FROM</label>
+								<input class="input-sm" id="f-from" placeholder="Origin port" />
+							</div>
+							<div class="form-item">
+								<label class="label">VOYAGE TO</label>
+								<input class="input-sm" id="f-to" placeholder="Destination port" />
+							</div>
+							<div class="form-item">
+								<label class="label">CARGO</label>
+								<input class="input-sm" id="f-cargo" placeholder="Cargo description" />
+							</div>
+							<div class="form-item">
+								<label class="label">PORT</label>
+								<input class="input-sm" id="f-port" placeholder="Port name" />
+							</div>
+							<div class="form-item">
+								<label class="label">OPERATION</label>
+								<select class="select" id="f-operation">
+									<option value="load">Load</option>
+									<option value="discharge" selected>Discharge</option>
+								</select>
+							</div>
+							<div class="form-item">
+								<label class="label">ALLOWED LAYTIME (DAYS)</label>
+								<input class="input-sm" id="f-allowed" type="number" placeholder="e.g., 5" />
+							</div>
+							<div class="form-item">
+								<label class="label">DEMURRAGE ($/DAY)</label>
+								<input class="input-sm" id="f-demurrage" type="number" placeholder="e.g., 5000" />
+							</div>
+							<div class="form-item">
+								<label class="label">DISPATCH ($/DAY)</label>
+								<input class="input-sm" id="f-dispatch" type="number" placeholder="e.g., 2500" />
+							</div>
+							<div class="form-item">
+								<label class="label">LOAD/DISCH (MT/DAY)</label>
+								<input class="input-sm" id="f-rate" type="number" placeholder="e.g., 1000" />
+							</div>
+							<div class="form-item">
+								<label class="label">CARGO QTY (MT)</label>
+								<input class="input-sm" id="f-qty" type="number" placeholder="e.g., 47000" />
+							</div>
+						</div>
+						
+						<div class="form-actions">
+							<button class="btn btn-primary" id="calc-btn">CALCULATE</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Right Panel: Results and Events Table -->
+				<div class="right-panel" id="right-panel">
+					<div class="panel-header">
+						<h2>Laytime Calculation Results</h2>
+					</div>
+					
+					<!-- Initial State: Show success message -->
+					<div class="initial-state" id="initial-state">
+						<div class="success-message">
+							<div class="success-icon">✅</div>
+							<h3>SOF/CP Parsed Successfully</h3>
+							<p>Please verify the extracted details on the left and click Calculate to proceed with laytime calculations.</p>
+						</div>
+					</div>
+
+					<!-- Results Content (initially hidden) -->
+					<div class="results-content hidden" id="results-content">
+						<!-- Laytime Summary -->
+						<div class="laytime-summary-section">
+							<div class="summary-header">
+								<h3>LAYTIME ALLOWED</h3>
+								<div class="summary-value" id="laytime-allowed">0.00 Days</div>
+							</div>
+						</div>
+
+						<!-- Add Event Form -->
+						<div class="add-event-section">
+							<div class="add-event-form">
+								<input type="text" id="new-event" placeholder="EVENT" />
+								<input type="datetime-local" id="start-datetime" />
+								<input type="datetime-local" id="end-datetime" />
+								<button class="btn btn-primary" id="add-event-btn">ADD EVENT</button>
+							</div>
+						</div>
+
+						<!-- Events Timeline -->
+						<div class="events-section">
+							<h3>Events Timeline</h3>
+							<div class="events-table">
+								<table>
+									<thead>
+										<tr>
+											<th>EVENTS</th>
+											<th>DAY</th>
+											<th>START DATE TIME</th>
+											<th>END DATE TIME</th>
+											<th>LAYTIME TIME UTILIZATION</th>
+											<th>LAYTIME % UTILIZATION</th>
+											<th>LAYTIME CONSUMED</th>
+											<th>LAYTIME REMAINING</th>
+											<th>ACTION</th>
+										</tr>
+									</thead>
+									<tbody id="events-tbody">
+										<!-- Events will be populated here -->
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<footer class="footer">
+		<div class="container">
+			<span>© <span id="year"></span> Cargo Laytime. All rights reserved.</span>
+		</div>
+	</footer>
+
+	<script src="assets/js/app.js"></script>
+	<script src="assets/js/extraction-results.js"></script>
+</body>
+</html>

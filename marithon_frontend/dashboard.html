@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Laytime Dashboard • Cargo Laytime</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/theme.css" />
+	<link rel="stylesheet" href="assets/css/dashboard.css" />
+</head>
+<body>
+	<header class="header">
+		<div class="container nav">
+			<a class="brand" href="index.html">
+				<span class="brand-badge">CL</span>
+				<span>Cargo Laytime</span>
+			</a>
+			<div class="nav-cta">
+				<a class="btn btn-ghost" href="index.html">Home</a>
+				<div class="profile-chip"><span class="avatar">U</span><div><div id="profile-name">User</div><div class="role" id="profile-role">Member</div></div></div>
+			</div>
+		</div>
+	</header>
+
+	<main class="workspace">
+		<div class="container">
+			<div class="workspace-card">
+				<div class="topbar">
+					<div class="tabbar" role="tablist">
+						<button class="tab active" data-tab="automated">Automated</button>
+						<button class="tab" data-tab="manual">Manual</button>
+						<button class="tab" data-tab="saved">Saved Laytime</button>
+					</div>
+					<div class="actions">
+						<button class="action-btn">Layspan Dashboard</button>
+						<button class="action-btn">Help</button>
+					</div>
+				</div>
+
+				<div class="panel" id="panel-automated">
+					<div class="grid">
+						<div class="dropzone" data-accept="application/pdf">
+							<div>
+								<div style="font-size:40px">☁️</div>
+								<h4>Upload SOF File</h4>
+								<p>(PDF only)</p>
+								<input class="hidden" type="file" accept="application/pdf" />
+								<div class="file-name">No file chosen</div>
+							</div>
+						</div>
+						<div class="dropzone" data-accept="application/pdf">
+							<div>
+								<div style="font-size:40px">☁️</div>
+								<h4>Upload CP File (optional)</h4>
+								<p>(PDF only)</p>
+								<input class="hidden" type="file" accept="application/pdf" />
+								<div class="file-name">No file chosen</div>
+							</div>
+						</div>
+					</div>
+					<div class="submit-area">
+						<button class="btn btn-primary" id="submit-automated">Submit</button>
+					</div>
+				</div>
+
+				<div class="panel hidden" id="panel-manual">
+					<p style="margin:0;color:#6b7280">Build a laytime statement from scratch. Add events and pauses, then export.</p>
+					<div style="height:14px"></div>
+					<div class="actions">
+						<button class="btn">Add Event</button>
+						<button class="btn">Pause Counter</button>
+						<button class="btn btn-accent">Export PDF</button>
+					</div>
+				</div>
+
+				<div class="panel hidden" id="panel-saved">
+					<div class="saved-list" id="saved-list"></div>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<footer class="footer">
+		<div class="container">
+			<span>© <span id="year"></span> Cargo Laytime. All rights reserved.</span>
+		</div>
+	</footer>
+
+	<script src="assets/js/app.js"></script>
+	<script src="assets/js/dashboard.js"></script>
+</body>
+</html>

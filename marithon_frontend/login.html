@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Log In • Cargo Laytime</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/theme.css" />
+</head>
+<body>
+	<header class="header">
+		<div class="container nav">
+			<a class="brand" href="index.html">
+				<span class="brand-badge">CL</span>
+				<span>Cargo Laytime</span>
+			</a>
+			<div class="nav-cta">
+				<a class="btn btn-ghost" href="index.html">Home</a>
+				<a class="btn btn-accent" href="signup.html">Sign Up</a>
+			</div>
+		</div>
+	</header>
+
+	<main class="center">
+		<div class="card">
+			<h1>Welcome Back</h1>
+			<form id="login-form" novalidate>
+				<label class="label" for="login-email">Email</label>
+				<input class="input" id="login-email" type="email" placeholder="your@email.com" required />
+				<div class="error-text" id="login-email-error">Please enter a valid email address.</div>
+
+				<label class="label" for="login-password">Password</label>
+				<input class="input" id="login-password" type="password" placeholder="••••••••" required />
+				<div class="error-text" id="login-password-error">Password must be at least 6 characters.</div>
+
+				<div class="row" style="margin:12px 0 4px;">
+					<label class="checkbox"><input type="checkbox" id="remember" /> Keep me logged in</label>
+					<a href="#" style="text-decoration:none;color:var(--color-primary);font-weight:600;">Forgot Password?</a>
+				</div>
+
+				<button class="btn btn-primary" style="width:100%;margin-top:8px;" type="submit">Log In</button>
+			</form>
+			<div style="margin-top:14px;text-align:center;color:#6b7280;">
+				Don't have an account? <a href="signup.html">Sign Up</a>
+			</div>
+		</div>
+	</main>
+
+	<footer class="footer">
+		<div class="container">
+			<span>© <span id="year"></span> Cargo Laytime. All rights reserved.</span>
+		</div>
+	</footer>
+
+	<script src="assets/js/app.js"></script>
+</body>
+</html>

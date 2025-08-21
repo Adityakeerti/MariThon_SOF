@@ -1,0 +1,85 @@
+# Business Data Extraction Patterns
+# This file contains patterns for extracting business information from shipping documents
+
+VESSEL:
+  - "Name of Vessel"
+  - "Vessel"
+  - "Ship"
+  - "Created For"
+  - "Account"
+  - "M.V."
+  - "MV"
+
+VOYAGE_FROM:
+  - "Port of Loading"
+  - "Port of Loading Cargo"
+  - "Loading Port"
+  - "Origin Port"
+  - "From"
+  - "Voyage From"
+
+VOYAGE_TO:
+  - "Port of Discharging"
+  - "Port of Discharging Cargo"
+  - "Discharge Port"
+  - "Destination Port"
+  - "To"
+  - "Voyage To"
+
+PORT:
+  - "Port"
+  - "Port Name"
+  - "Current Port"
+  - "Berth"
+
+CARGO:
+  - "Cargo"
+  - "Cargo Description"
+  - "Commodity"
+  - "Goods"
+  - "Product"
+
+OPERATION:
+  - "Load"
+  - "Loading"
+  - "Discharge"
+  - "Discharging"
+  - "Operation"
+
+DEMURRAGE:
+  - "Demurrage"
+  - "Demurrage Rate"
+  - "$/day"
+  - "per day"
+
+DISPATCH:
+  - "Dispatch"
+  - "Dispatch Rate"
+  - "Despatch"
+  - "Despatch Rate"
+
+RATE:
+  - "Load Rate"
+  - "Discharge Rate"
+  - "MT/day"
+  - "MT per day"
+  - "Tons per day"
+  - "Loading Rate"
+  - "Discharging Rate"
+
+QUANTITY:
+  - "Cargo Quantity"
+  - "Cargo Qty"
+  - "Quantity"
+  - "Qty"
+  - "MT"
+  - "Metric Tons"
+  - "Tons"
+
+ALLOWED_LAYTIME:
+  - "Allowed Laytime"
+  - "Laytime"
+  - "Allowed Days"
+  - "Laytime Allowed"
+  - "Free Time"
+  - "Free Days"

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Test PDF Upload • Debug</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/theme.css" />
+	<style>
+		.debug-info {
+			background: #f3f4f6;
+			border: 1px solid #d1d5db;
+			border-radius: 8px;
+			padding: 16px;
+			margin: 16px 0;
+			font-family: monospace;
+			font-size: 14px;
+			white-space: pre-wrap;
+			max-height: 400px;
+			overflow-y: auto;
+		}
+		.test-section {
+			margin: 24px 0;
+			padding: 20px;
+			border: 1px solid #e5e7eb;
+			border-radius: 8px;
+		}
+	</style>
+</head>
+<body>
+	<header class="header">
+		<div class="container nav">
+			<a class="brand" href="index.html">
+				<span class="brand-badge">CL</span>
+				<span>Cargo Laytime</span>
+			</a>
+			<div class="nav-cta">
+				<a class="btn btn-ghost" href="dashboard.html">Dashboard</a>
+			</div>
+		</div>
+	</header>
+
+	<main class="center">
+		<div class="card">
+			<h1>PDF Upload Test & Debug</h1>
+			
+			<div class="test-section">
+				<h3>1. Test Backend Connection</h3>
+				<button class="btn btn-primary" id="test-connection">Test Backend Health</button>
+				<div id="connection-result" class="debug-info"></div>
+			</div>
+
+			<div class="test-section">
+				<h3>2. Upload PDF File</h3>
+				<input type="file" id="pdf-file" accept="application/pdf" />
+				<button class="btn btn-primary" id="test-upload" style="margin-top: 12px;">Test Upload</button>
+				<div id="upload-result" class="debug-info"></div>
+			</div>
+
+			<div class="test-section">
+				<h3>3. Debug Console</h3>
+				<div id="debug-console" class="debug-info">Console output will appear here...</div>
+			</div>
+		</div>
+	</main>
+
+	<script>
+		// Override console.log to show in our debug panel
+		const debugConsole = document.getElementById('debug-console');
+		const originalLog = console.log;
+		const originalError = console.error;
+		
+		console.log = function(...args) {
+			originalLog.apply(console, args);
+			debugConsole.textContent += args.map(arg => 
+				typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+			).join(' ') + '\n';
+		};
+		
+		console.error = function(...args) {
+			originalError.apply(console, args);
+			debugConsole.textContent += 'ERROR: ' + args.map(arg => 
+				typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+			).join(' ') + '\n';
+		};
+
+		// Test backend connection
+		document.getElementById('test-connection').addEventListener('click', async () => {
+			const resultDiv = document.getElementById('connection-result');
+			resultDiv.textContent = 'Testing connection...';
+			
+			try {
+				const API_BASE = 'http://localhost:8000';
+				console.log('Testing connection to:', API_BASE);
+				
+				const response = await fetch(`${API_BASE}/health`);
+				console.log('Health check response:', response.status, response.statusText);
+				
+				if (response.ok) {
+					const data = await response.json();
+					resultDiv.textContent = `✅ Connection successful!\nStatus: ${data.status}\nModel: ${data.model || 'None'}`;
+					console.log('Health data:', data);
+				} else {
+					resultDiv.textContent = `❌ Connection failed!\nStatus: ${response.status}\nStatus Text: ${response.statusText}`;
+				}
+			} catch (error) {
+				resultDiv.textContent = `❌ Connection error!\nError: ${error.message}`;
+				console.error('Connection test failed:', error);
+			}
+		});
+
+		// Test PDF upload
+		document.getElementById('test-upload').addEventListener('click', async () => {
+			const fileInput = document.getElementById('pdf-file');
+			const resultDiv = document.getElementById('upload-result');
+			
+			if (!fileInput.files[0]) {
+				resultDiv.textContent = '❌ Please select a PDF file first!';
+				return;
+			}
+			
+			const file = fileInput.files[0];
+			resultDiv.textContent = 'Uploading file...';
+			
+			try {
+				const API_BASE = 'http://localhost:8000';
+				console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
+				
+				const formData = new FormData();
+				formData.append('file', file);
+				
+				const response = await fetch(`${API_BASE}/extract?debug=true`, {
+					method: 'POST',
+					body: formData
+				});
+				
+				console.log('Upload response:', response.status, response.statusText);
+				
+				if (response.ok) {
+					const data = await response.json();
+					resultDiv.textContent = `✅ Upload successful!\n\nParsed Data:\n${JSON.stringify(data, null, 2)}`;
+					console.log('Parsed data:', data);
+				} else {
+					const errorText = await response.text();
+					resultDiv.textContent = `❌ Upload failed!\nStatus: ${response.status}\nError: ${errorText}`;
+					console.error('Upload failed:', errorText);
+				}
+			} catch (error) {
+				resultDiv.textContent = `❌ Upload error!\nError: ${error.message}`;
+				console.error('Upload test failed:', error);
+			}
+		});
+
+		// Clear debug console
+		document.addEventListener('DOMContentLoaded', () => {
+			debugConsole.textContent = 'Debug console ready...\n';
+		});
+	</script>
+</body>
+</html>
