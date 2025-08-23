@@ -190,3 +190,75 @@ class DocParser:
 			except Exception:
 				pass
 		return lines
+
+	def _parse_docx(self, content: bytes) -> List[ParsedLine]:
+		"""Parse DOCX files using python-docx library."""
+		if DocxDocument is None:
+			# Fallback to plaintext if python-docx is not available
+			return [ParsedLine(text=content.decode(errors="ignore"), page=1, bbox=(0, 0, 0, 0), line_no=1)]
+		
+		lines: List[ParsedLine] = []
+		line_no = 0
+		
+		try:
+			# Create a BytesIO object from the content
+			buf = io.BytesIO(content)
+			doc = DocxDocument(buf)
+			
+			# Extract text from paragraphs
+			for paragraph in doc.paragraphs:
+				text = paragraph.text.strip()
+				if text:  # Only add non-empty paragraphs
+					line_no += 1
+					lines.append(ParsedLine(
+						text=text,
+						page=1,  # DOCX doesn't have page concept like PDFs
+						bbox=(0, 0, 0, 0),  # No bounding box info in DOCX
+						line_no=line_no
+					))
+			
+			# Extract text from tables if any
+			for table in doc.tables:
+				for row in table.rows:
+					for cell in row.cells:
+						for paragraph in cell.paragraphs:
+							text = paragraph.text.strip()
+							if text:
+								line_no += 1
+								lines.append(ParsedLine(
+									text=text,
+									page=1,
+									bbox=(0, 0, 0, 0),
+									line_no=line_no
+								))
+			
+			# Extract text from headers and footers
+			for section in doc.sections:
+				for header in section.header.paragraphs:
+					text = header.text.strip()
+					if text:
+						line_no += 1
+						lines.append(ParsedLine(
+							text=text,
+							page=1,
+							bbox=(0, 0, 0, 0),
+							line_no=line_no
+						))
+				
+				for footer in section.footer.paragraphs:
+					text = footer.text.strip()
+					if text:
+						line_no += 1
+						lines.append(ParsedLine(
+							text=text,
+							page=1,
+							bbox=(0, 0, 0, 0),
+							line_no=line_no
+						))
+			
+		except Exception as e:
+			# If DOCX parsing fails, fall back to plaintext
+			print(f"DOCX parsing failed: {e}")
+			return [ParsedLine(text=content.decode(errors="ignore"), page=1, bbox=(0, 0, 0, 0), line_no=1)]
+		
+		return lines

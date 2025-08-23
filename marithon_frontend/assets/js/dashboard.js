@@ -34,17 +34,19 @@
 		zone.addEventListener('drop', (e) => {
 			e.preventDefault(); zone.classList.remove('dragover');
 			const file = e.dataTransfer.files && e.dataTransfer.files[0];
-			if (file && file.type === 'application/pdf') {
+			if (file && (file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.name.toLowerCase().endsWith('.docx'))) {
 				setName(file.name);
 				if (idx === 0) sofFile = file; else cpFile = file;
 			} else if (file) {
-				alert('Please upload a PDF file.');
+				alert('Please upload a PDF or DOCX file.');
 			}
 		});
 		input.addEventListener('change', () => {
 			const f = input.files[0];
 			setName(f ? f.name : '');
-			if (f && f.type === 'application/pdf') { if (idx === 0) sofFile = f; else cpFile = f; }
+			if (f && (f.type === 'application/pdf' || f.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || f.name.toLowerCase().endsWith('.docx'))) { 
+				if (idx === 0) sofFile = f; else cpFile = f; 
+			}
 		});
 	});
 
@@ -54,7 +56,7 @@
 	
 	if (autoSubmit) {
 		autoSubmit.addEventListener('click', async () => {
-			if (!sofFile) { alert('Please upload the SoF PDF first.'); return; }
+			if (!sofFile) { alert('Please upload the SoF file (PDF or DOCX) first.'); return; }
 			try {
 				autoSubmit.disabled = true;
 				autoSubmit.textContent = 'Processing...';
