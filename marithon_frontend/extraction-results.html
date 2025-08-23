@@ -9,6 +9,10 @@
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="assets/css/theme.css" />
 	<link rel="stylesheet" href="assets/css/extraction-results.css" />
+	
+	<!-- External Libraries for Export Functionality -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 	<header class="header">
@@ -24,6 +28,49 @@
 		</div>
 	</header>
 
+	<!-- Export Popup Modal -->
+	<div class="export-popup-overlay hidden" id="export-popup-overlay">
+		<div class="export-popup">
+			<div class="export-popup-header">
+				<h3>📤 Export & Download</h3>
+				<button class="close-btn" onclick="hideExportPopup()">×</button>
+			</div>
+			<div class="export-popup-content">
+				<p>Choose your preferred export format:</p>
+				<div class="export-options">
+					<div class="export-option" onclick="exportToPDF(); hideExportPopup();">
+						<div class="export-option-icon">📄</div>
+						<div class="export-option-text">
+							<h4>PDF Report</h4>
+							<p>Professional PDF report with all calculation details</p>
+						</div>
+					</div>
+					<div class="export-option" onclick="exportToExcel(); hideExportPopup();">
+						<div class="export-option-icon">📊</div>
+						<div class="export-option-text">
+							<h4>Excel Spreadsheet</h4>
+							<p>Detailed Excel file with calculations and data</p>
+						</div>
+					</div>
+					<div class="export-option" onclick="exportToJSON(); hideExportPopup();">
+						<div class="export-option-icon">🔧</div>
+						<div class="export-option-text">
+							<h4>JSON Data</h4>
+							<p>Structured data for system integration</p>
+						</div>
+					</div>
+					<div class="export-option" onclick="exportToCSV(); hideExportPopup();">
+						<div class="export-option-icon">📋</div>
+						<div class="export-option-text">
+							<h4>CSV Export</h4>
+							<p>Comma-separated values for spreadsheet import</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<main class="workspace">
 		<div class="workspace-card">
 			<div class="topbar">
@@ -33,6 +80,12 @@
 				<div class="actions">
 					<button class="action-btn" onclick="window.history.back()">Back</button>
 					<button class="action-btn">Help</button>
+					<!-- Export Button (initially hidden) -->
+					<div class="export-button hidden" id="export-button">
+						<button class="action-btn btn-export" onclick="showExportPopup()">
+							📤 Export
+						</button>
+					</div>
 				</div>
 			</div>
 
@@ -167,6 +220,8 @@
 								</table>
 							</div>
 						</div>
+
+
 					</div>
 				</div>
 			</div>

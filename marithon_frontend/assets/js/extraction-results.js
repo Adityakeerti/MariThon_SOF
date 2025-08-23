@@ -93,6 +93,9 @@
 			initialState.style.display = 'none';
 			resultsContent.classList.remove('hidden');
 			
+			// Show export buttons
+			showExportButtons();
+			
 			// Calculate and populate results
 			calculateLaytimeResults(formData);
 		});
@@ -286,6 +289,604 @@
 			row.remove();
 		}
 	};
+
+	// Export Functions
+	window.exportToPDF = function() {
+		generatePDF();
+	};
+
+	window.exportToExcel = function() {
+		generateExcel();
+	};
+
+	window.exportToJSON = function() {
+		generateJSON();
+	};
+
+	window.exportToCSV = function() {
+		generateCSV();
+	};
+
+	// PDF Generation
+	function generatePDF() {
+		try {
+			// Get current data
+			const formData = getCurrentFormData();
+			const eventsData = getCurrentEventsData();
+			const laytimeData = getCurrentLaytimeData();
+			
+			// Create PDF content using jsPDF
+			if (typeof jsPDF !== 'undefined') {
+				createPDFReport(formData, eventsData, laytimeData);
+			} else {
+				// Fallback: download as HTML for PDF conversion
+				downloadAsHTML(formData, eventsData, laytimeData);
+			}
+		} catch (error) {
+			console.error('PDF generation failed:', error);
+			alert('PDF generation failed. Please try again.');
+		}
+	}
+
+	// Create PDF Report using jsPDF
+	function createPDFReport(formData, eventsData, laytimeData) {
+		const { jsPDF } = window.jspdf;
+		const doc = new jsPDF();
+		
+		// Set document properties
+		doc.setProperties({
+			title: 'Laytime Calculation Report',
+			subject: 'Vessel Laytime Analysis',
+			author: 'MariThon Laytime Calculator',
+			creator: 'MariThon System'
+		});
+		
+		let yPos = 20;
+		const pageWidth = doc.internal.pageSize.width;
+		const margin = 20;
+		const contentWidth = pageWidth - (2 * margin);
+		
+		// Title
+		doc.setFontSize(20);
+		doc.setFont('helvetica', 'bold');
+		doc.text('Laytime Calculation Report', pageWidth / 2, yPos, { align: 'center' });
+		yPos += 15;
+		
+		// Date
+		doc.setFontSize(12);
+		doc.setFont('helvetica', 'normal');
+		doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPos, { align: 'center' });
+		yPos += 20;
+		
+		// Vessel and Cargo Details
+		doc.setFontSize(16);
+		doc.setFont('helvetica', 'bold');
+		doc.text('Vessel and Cargo Details', margin, yPos);
+		yPos += 10;
+		
+		doc.setFontSize(10);
+		doc.setFont('helvetica', 'normal');
+		
+		const formFields = [
+			['Vessel:', formData.vessel],
+			['Voyage From:', formData.voyageFrom],
+			['Voyage To:', formData.voyageTo],
+			['Cargo:', formData.cargo],
+			['Port:', formData.port],
+			['Operation:', formData.operation]
+		];
+		
+		formFields.forEach(([label, value]) => {
+			doc.text(`${label} ${value}`, margin, yPos);
+			yPos += 6;
+		});
+		
+		yPos += 10;
+		
+		// Laytime Parameters
+		doc.setFontSize(16);
+		doc.setFont('helvetica', 'bold');
+		doc.text('Laytime Parameters', margin, yPos);
+		yPos += 10;
+		
+		doc.setFontSize(10);
+		doc.setFont('helvetica', 'normal');
+		
+		const paramFields = [
+			['Allowed Laytime:', `${formData.allowedLaytime} days`],
+			['Demurrage:', `$${formData.demurrage}/day`],
+			['Dispatch:', `$${formData.dispatch}/day`],
+			['Rate:', `${formData.rate} MT/day`],
+			['Quantity:', `${formData.quantity} MT`]
+		];
+		
+		paramFields.forEach(([label, value]) => {
+			doc.text(`${label} ${value}`, margin, yPos);
+			yPos += 6;
+		});
+		
+		yPos += 10;
+		
+		// Laytime Summary
+		doc.setFontSize(16);
+		doc.setFont('helvetica', 'bold');
+		doc.text('Laytime Summary', margin, yPos);
+		yPos += 10;
+		
+		doc.setFontSize(10);
+		doc.setFont('helvetica', 'normal');
+		doc.text(`Laytime Allowed: ${laytimeData.laytimeAllowed}`, margin, yPos);
+		yPos += 15;
+		
+		// Events Timeline
+		if (eventsData.length > 0) {
+			doc.setFontSize(16);
+			doc.setFont('helvetica', 'bold');
+			doc.text('Events Timeline', margin, yPos);
+			yPos += 10;
+			
+			// Check if we need a new page
+			if (yPos > 250) {
+				doc.addPage();
+				yPos = 20;
+			}
+			
+			// Create table headers
+			const headers = ['Event', 'Day', 'Start', 'End', 'Utilization', '%', 'Consumed', 'Remaining'];
+			const colWidths = [40, 20, 30, 30, 25, 15, 25, 25];
+			let xPos = margin;
+			
+			// Draw table headers
+			doc.setFontSize(9);
+			doc.setFont('helvetica', 'bold');
+			headers.forEach((header, index) => {
+				doc.text(header, xPos, yPos);
+				xPos += colWidths[index];
+			});
+			
+			yPos += 8;
+			
+			// Draw table rows
+			doc.setFontSize(8);
+			doc.setFont('helvetica', 'normal');
+			
+			eventsData.forEach(event => {
+				// Check if we need a new page
+				if (yPos > 270) {
+					doc.addPage();
+					yPos = 20;
+				}
+				
+				xPos = margin;
+				const rowData = [
+					event.event,
+					event.day,
+					event.startDateTime,
+					event.endDateTime,
+					event.timeUtilization,
+					event.percentUtilization,
+					event.laytimeConsumed,
+					event.laytimeRemaining
+				];
+				
+				rowData.forEach((cell, index) => {
+					// Truncate long text
+					const cellText = cell.length > 15 ? cell.substring(0, 12) + '...' : cell;
+					doc.text(cellText, xPos, yPos);
+					xPos += colWidths[index];
+				});
+				
+				yPos += 6;
+			});
+		}
+		
+		// Save the PDF
+		doc.save('laytime-calculation-report.pdf');
+	}
+
+	// Excel Generation
+	function generateExcel() {
+		try {
+			const formData = getCurrentFormData();
+			const eventsData = getCurrentEventsData();
+			const laytimeData = getCurrentLaytimeData();
+			
+			// Create Excel file using SheetJS
+			if (typeof XLSX !== 'undefined') {
+				createExcelFile(formData, eventsData, laytimeData);
+			} else {
+				// Fallback: download as CSV
+				generateCSV();
+			}
+		} catch (error) {
+			console.error('Excel generation failed:', error);
+			alert('Excel generation failed. Please try again.');
+		}
+	}
+
+	// Create Excel File using SheetJS
+	function createExcelFile(formData, eventsData, laytimeData) {
+		// Create workbook
+		const wb = XLSX.utils.book_new();
+		
+		// Create Summary sheet
+		const summaryData = [
+			['Laytime Calculation Report'],
+			['Generated on:', new Date().toLocaleDateString()],
+			[''],
+			['Vessel and Cargo Details'],
+			['Field', 'Value'],
+			['Vessel', formData.vessel],
+			['Voyage From', formData.voyageFrom],
+			['Voyage To', formData.voyageTo],
+			['Cargo', formData.cargo],
+			['Port', formData.port],
+			['Operation', formData.operation],
+			[''],
+			['Laytime Parameters'],
+			['Field', 'Value'],
+			['Allowed Laytime', `${formData.allowedLaytime} days`],
+			['Demurrage', `$${formData.demurrage}/day`],
+			['Dispatch', `$${formData.dispatch}/day`],
+			['Rate', `${formData.rate} MT/day`],
+			['Quantity', `${formData.quantity} MT`],
+			[''],
+			['Laytime Summary'],
+			['Field', 'Value'],
+			['Laytime Allowed', laytimeData.laytimeAllowed],
+			['Calculation Date', laytimeData.calculationDate]
+		];
+		
+		const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+		XLSX.utils.book_append_sheet(wb, summarySheet, 'Summary');
+		
+		// Create Events sheet if there are events
+		if (eventsData.length > 0) {
+			const eventsHeaders = [
+				'Event',
+				'Day',
+				'Start Date Time',
+				'End Date Time',
+				'Time Utilization',
+				'% Utilization',
+				'Laytime Consumed',
+				'Laytime Remaining'
+			];
+			
+			const eventsSheetData = [eventsHeaders];
+			eventsData.forEach(event => {
+				eventsSheetData.push([
+					event.event,
+					event.day,
+					event.startDateTime,
+					event.endDateTime,
+					event.timeUtilization,
+					event.percentUtilization,
+					event.laytimeConsumed,
+					event.laytimeRemaining
+				]);
+			});
+			
+			const eventsSheet = XLSX.utils.aoa_to_sheet(eventsSheetData);
+			XLSX.utils.book_append_sheet(wb, eventsSheet, 'Events');
+		}
+		
+		// Create Raw Data sheet
+		const rawData = [
+			['Category', 'Field', 'Value']
+		];
+		
+		// Add form data
+		Object.entries(formData).forEach(([key, value]) => {
+			rawData.push(['Form Data', key, value]);
+		});
+		
+		// Add events data
+		eventsData.forEach((event, index) => {
+			Object.entries(event).forEach(([key, value]) => {
+				rawData.push([`Event ${index + 1}`, key, value]);
+			});
+		});
+		
+		// Add laytime data
+		Object.entries(laytimeData).forEach(([key, value]) => {
+			rawData.push(['Laytime', key, value]);
+		});
+		
+		const rawDataSheet = XLSX.utils.aoa_to_sheet(rawData);
+		XLSX.utils.book_append_sheet(wb, rawDataSheet, 'Raw Data');
+		
+		// Save the Excel file
+		XLSX.writeFile(wb, 'laytime-calculation.xlsx');
+	}
+
+	// JSON Generation
+	function generateJSON() {
+		try {
+			const exportData = {
+				metadata: {
+					exportDate: new Date().toISOString(),
+					version: '1.0',
+					source: 'MariThon Laytime Calculator'
+				},
+				formData: getCurrentFormData(),
+				eventsData: getCurrentEventsData(),
+				laytimeData: getCurrentLaytimeData()
+			};
+			
+			const jsonString = JSON.stringify(exportData, null, 2);
+			downloadFile(jsonString, 'laytime-calculation.json', 'application/json');
+		} catch (error) {
+			console.error('JSON generation failed:', error);
+			alert('JSON generation failed. Please try again.');
+		}
+	}
+
+	// CSV Generation
+	function generateCSV() {
+		try {
+			const formData = getCurrentFormData();
+			const eventsData = getCurrentEventsData();
+			const laytimeData = getCurrentLaytimeData();
+			
+			// Create CSV content
+			const csvContent = createCSVContent(formData, eventsData, laytimeData);
+			downloadFile(csvContent, 'laytime-calculation.csv', 'text/csv');
+		} catch (error) {
+			console.error('CSV generation failed:', error);
+			alert('CSV generation failed. Please try again.');
+		}
+	}
+
+	// Helper Functions
+	function getCurrentFormData() {
+		return {
+			vessel: document.getElementById('f-vessel')?.value || '',
+			voyageFrom: document.getElementById('f-from')?.value || '',
+			voyageTo: document.getElementById('f-to')?.value || '',
+			cargo: document.getElementById('f-cargo')?.value || '',
+			port: document.getElementById('f-port')?.value || '',
+			operation: document.getElementById('f-operation')?.value || 'discharge',
+			allowedLaytime: document.getElementById('f-allowed')?.value || '',
+			demurrage: document.getElementById('f-demurrage')?.value || '',
+			dispatch: document.getElementById('f-dispatch')?.value || '',
+			rate: document.getElementById('f-rate')?.value || '',
+			quantity: document.getElementById('f-qty')?.value || ''
+		};
+	}
+
+	function getCurrentEventsData() {
+		const tbody = document.getElementById('events-tbody');
+		if (!tbody) return [];
+		
+		const events = [];
+		const rows = tbody.querySelectorAll('tr');
+		
+		rows.forEach(row => {
+			const cells = row.querySelectorAll('td');
+			if (cells.length >= 8) {
+				events.push({
+					event: cells[0].textContent.trim(),
+					day: cells[1].textContent.trim(),
+					startDateTime: cells[2].textContent.trim(),
+					endDateTime: cells[3].textContent.trim(),
+					timeUtilization: cells[4].textContent.trim(),
+					percentUtilization: cells[5].querySelector('input')?.value || '0',
+					laytimeConsumed: cells[6].textContent.trim(),
+					laytimeRemaining: cells[7].textContent.trim()
+				});
+			}
+		});
+		
+		return events;
+	}
+
+	function getCurrentLaytimeData() {
+		return {
+			laytimeAllowed: document.getElementById('laytime-allowed')?.textContent || '0.00 Days',
+			calculationDate: new Date().toISOString()
+		};
+	}
+
+	function createCSVContent(formData, eventsData, laytimeData) {
+		let csv = 'Category,Field,Value\n';
+		
+		// Form data
+		Object.entries(formData).forEach(([key, value]) => {
+			csv += `Form Data,${key},${value}\n`;
+		});
+		
+		// Events data
+		eventsData.forEach((event, index) => {
+			Object.entries(event).forEach(([key, value]) => {
+				csv += `Event ${index + 1},${key},${value}\n`;
+			});
+		});
+		
+		// Laytime data
+		Object.entries(laytimeData).forEach(([key, value]) => {
+			csv += `Laytime,${key},${value}\n`;
+		});
+		
+		return csv;
+	}
+
+	function downloadFile(content, filename, mimeType) {
+		const blob = new Blob([content], { type: mimeType });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}
+
+	function downloadAsHTML(formData, eventsData, laytimeData) {
+		const htmlContent = createHTMLReport(formData, eventsData, laytimeData);
+		downloadFile(htmlContent, 'laytime-calculation.html', 'text/html');
+	}
+
+	function createHTMLReport(formData, eventsData, laytimeData) {
+		return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Laytime Calculation Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .section { margin-bottom: 30px; }
+        .section h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-item { margin-bottom: 15px; }
+        .form-item label { font-weight: bold; display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Laytime Calculation Report</h1>
+        <p>Generated on ${new Date().toLocaleDateString()}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Vessel and Cargo Details</h2>
+        <div class="form-grid">
+            <div class="form-item">
+                <label>Vessel:</label>
+                <span>${formData.vessel}</span>
+            </div>
+            <div class="form-item">
+                <label>Voyage From:</label>
+                <span>${formData.voyageFrom}</span>
+            </div>
+            <div class="form-item">
+                <label>Voyage To:</label>
+                <span>${formData.voyageTo}</span>
+            </div>
+            <div class="form-item">
+                <label>Cargo:</label>
+                <span>${formData.cargo}</span>
+            </div>
+            <div class="form-item">
+                <label>Port:</label>
+                <span>${formData.port}</span>
+            </div>
+            <div class="form-item">
+                <label>Operation:</label>
+                <span>${formData.operation}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Laytime Parameters</h2>
+        <div class="form-grid">
+            <div class="form-item">
+                <label>Allowed Laytime:</label>
+                <span>${formData.allowedLaytime} days</span>
+            </div>
+            <div class="form-item">
+                <label>Demurrage:</label>
+                <span>$${formData.demurrage}/day</span>
+            </div>
+            <div class="form-item">
+                <label>Dispatch:</label>
+                <span>$${formData.dispatch}/day</span>
+            </div>
+            <div class="form-item">
+                <label>Rate:</label>
+                <span>${formData.rate} MT/day</span>
+            </div>
+            <div class="form-item">
+                <label>Quantity:</label>
+                <span>${formData.quantity} MT</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Laytime Summary</h2>
+        <p><strong>Laytime Allowed:</strong> ${laytimeData.laytimeAllowed}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Events Timeline</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Day</th>
+                    <th>Start Date Time</th>
+                    <th>End Date Time</th>
+                    <th>Time Utilization</th>
+                    <th>% Utilization</th>
+                    <th>Laytime Consumed</th>
+                    <th>Laytime Remaining</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${eventsData.map(event => `
+                    <tr>
+                        <td>${event.event}</td>
+                        <td>${event.day}</td>
+                        <td>${event.startDateTime}</td>
+                        <td>${event.endDateTime}</td>
+                        <td>${event.timeUtilization}</td>
+                        <td>${event.percentUtilization}%</td>
+                        <td>${event.laytimeConsumed}</td>
+                        <td>${event.laytimeRemaining}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>`;
+	}
+
+	// Show export button when results are displayed
+	function showExportButtons() {
+		const exportButton = document.getElementById('export-button');
+		if (exportButton) {
+			exportButton.classList.remove('hidden');
+		}
+	}
+
+	// Show export popup
+	window.showExportPopup = function() {
+		const popup = document.getElementById('export-popup-overlay');
+		if (popup) {
+			popup.classList.remove('hidden');
+		}
+	};
+
+	// Hide export popup
+	window.hideExportPopup = function() {
+		const popup = document.getElementById('export-popup-overlay');
+		if (popup) {
+			popup.classList.add('hidden');
+		}
+	};
+
+	// Close popup when clicking outside
+	document.addEventListener('click', function(event) {
+		const popup = document.getElementById('export-popup-overlay');
+		if (popup && event.target === popup) {
+			hideExportPopup();
+		}
+	});
+
+	// Close popup with Escape key
+	document.addEventListener('keydown', function(event) {
+		if (event.key === 'Escape') {
+			hideExportPopup();
+		}
+	});
 
 	// Initialize the page
 	loadExtractedData();
