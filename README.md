@@ -2,6 +2,8 @@
 
 A comprehensive maritime operations application for laytime calculations, event tracking, and document processing. Built with FastAPI backend and modern HTML/CSS/JavaScript frontend.
 
+> **⚠️ Setup Notice**: This project uses machine learning models and requires proper dependency installation. The original requirements files were missing critical libraries like PyTorch. Please follow the [SETUP_GUIDE.md](SETUP_GUIDE.md) for complete installation instructions.
+
 ## 🚀 Features
 
 - **PDF Document Processing**: Upload and parse Statement of Facts (SoF) documents
@@ -42,54 +44,37 @@ MariThon/
 
 ## 📦 Installation
 
-### 1. Clone the Repository
+**⚠️ IMPORTANT: This project requires specific setup due to ML dependencies. Please follow the detailed [SETUP_GUIDE.md](SETUP_GUIDE.md) for complete installation instructions.**
+
+### Quick Start
 
 ```bash
+# Clone the repository
 git clone <your-repository-url>
 cd MariThon
+
+# Follow the detailed setup guide
+# The backend requires PyTorch and other ML libraries
 ```
 
-### 2. Backend Setup
+### What You'll Need
 
-The backend has its own virtual environment and requirements.
+- **Python 3.8+** (Recommended: Python 3.11 or 3.12)
+- **At least 4GB RAM** (PyTorch and ML models are memory-intensive)
+- **Stable internet connection** (for downloading ML models on first run)
+- **Patience** (first installation may take 10-20 minutes)
 
-```bash
-# Navigate to backend directory
-cd backend
+### Why the Detailed Setup?
 
-# Create virtual environment
-python -m venv venv
+The project uses machine learning models that require:
+- **PyTorch** for neural network operations
+- **Transformers** for natural language processing
+- **Sentence-transformers** for text similarity
+- **Additional ML libraries** for data processing
 
-# Activate virtual environment
-# On Windows:
-venv\Scripts\Activate.ps1
-# On macOS/Linux:
-source venv/bin/activate
+**🚨 Without proper setup, the application will fail to run due to missing dependencies.**
 
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 3. Main Directory Setup
-
-The main directory also has a virtual environment for any additional tools.
-
-```bash
-# Return to main directory
-cd ..
-
-# Create main virtual environment
-python -m venv .venv
-
-# Activate virtual environment
-# On Windows:
-.venv\Scripts\Activate.ps1
-# On macOS/Linux:
-source .venv/bin/activate
-
-# Install any additional dependencies if needed
-pip install --upgrade pip
-```
+**📖 [Read the complete SETUP_GUIDE.md](SETUP_GUIDE.md) for step-by-step instructions.**
 
 ## 🚀 Running the Application
 

@@ -1,5 +1,7 @@
 # MariThon - Quick Start Guide
 
+> **⚠️ IMPORTANT**: This project requires specific setup due to missing ML dependencies. The automated setup scripts may fail without proper dependency installation. Please read [SETUP_GUIDE.md](SETUP_GUIDE.md) first.
+
 ## 🚀 One-Command Setup (Windows)
 
 ```bash
@@ -55,6 +57,9 @@ MariThon/
 - **Port in use**: Change port numbers or kill process
 - **Virtual env not active**: Look for `(venv)` or `(.venv)` in prompt
 - **Dependencies fail**: Upgrade pip first, then retry
+- **ML imports fail**: PyTorch and transformers may not be installed - see [SETUP_GUIDE.md](SETUP_GUIDE.md)
 
 ---
 **Full guide**: See `HOW_TO_RUN_LOCALLY.md` for detailed instructions
+
+**🚨 Critical**: If you encounter import errors for PyTorch, sentence-transformers, or other ML libraries, the automated setup failed. Please follow the [SETUP_GUIDE.md](SETUP_GUIDE.md) for manual dependency installation.
