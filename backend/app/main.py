@@ -5,6 +5,7 @@ from typing import Optional, Any
 from contextlib import asynccontextmanager
 
 from .pipeline_simple import SimpleExtractionPipeline, SimplePipelineConfig
+from .auth import router as auth_router
 
 pipeline: Optional[SimpleExtractionPipeline] = None
 
@@ -29,6 +30,9 @@ app.add_middleware(
 	allow_methods=["*"],
 	allow_headers=["*"],
 )
+
+# Include authentication routes
+app.include_router(auth_router)
 
 
 class HealthResponse(BaseModel):

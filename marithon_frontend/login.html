@@ -1,59 +1,233 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Log In • Cargo Laytime</title>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="assets/css/theme.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Cargo Laytime and Event Tracker</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-	<header class="header">
-		<div class="container nav">
-			<a class="brand" href="index.html">
-				<span class="brand-badge">CL</span>
-				<span>Cargo Laytime</span>
-			</a>
-			<div class="nav-cta">
-				<a class="btn btn-ghost" href="index.html">Home</a>
-				<a class="btn btn-accent" href="signup.html">Sign Up</a>
-			</div>
-		</div>
-	</header>
+    <div class="background-overlay"></div>
+    
+    <main class="main-container">
+        <div class="glass-container">
+            <h1 class="main-title">Welcome Back</h1>
+            <p class="login-subtitle">Sign in to your account</p>
+            
+            <form class="login-form" onsubmit="console.log('FORM SUBMITTED!'); handleLoginSubmit(event);">
+                <!-- Success/Error Message Container -->
+                <div id="message-container" class="message-container" style="display: none;">
+                    <div class="message-content">
+                        <div class="message-icon">
+                            <div class="spinner"></div>
+                        </div>
+                        <div class="message-text" id="message-text"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-input-container">
+                        <input type="password" id="password" name="password" class="form-input" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" name="remember">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-login">
+                    <span class="btn-text">Sign In</span>
+                    <div class="btn-overlay"></div>
+                </button>
+            </form>
+            
+            <div class="signup-link">
+                <p>Don't have an account? <a href="signup.html" class="link-text">Create one here</a></p>
+            </div>
+            
+            <div class="back-home">
+                <a href="index.html" class="back-link">← Back to Home</a>
+            </div>
+        </div>
+    </main>
 
-	<main class="center">
-		<div class="card">
-			<h1>Welcome Back</h1>
-			<form id="login-form" novalidate>
-				<label class="label" for="login-email">Email</label>
-				<input class="input" id="login-email" type="email" placeholder="your@email.com" required />
-				<div class="error-text" id="login-email-error">Please enter a valid email address.</div>
+    <script>
+        // Login page specific JavaScript
+        async function handleLoginSubmit(event) {
+            event.preventDefault();
+            console.log('=== LOGIN FUNCTION STARTED ===');
+            console.log('Login form submitted - function called!');
+            
+            const form = event.target;
+            const submitBtn = form.querySelector('.btn.btn-login');
+            const email = form.querySelector('#email').value;
+            const password = form.querySelector('#password').value;
+            const remember = form.querySelector('input[name="remember"]').checked;
+            
+            console.log('Form data:', { email, password, remember });
+            console.log('Submit button found:', submitBtn);
+            
+            // Show loading message
+            showMessage('Signing in...', 'loading');
+            console.log('Loading message shown');
+            
+            // Add loading state
+            submitBtn.classList.add('loading');
+            console.log('Loading state added to button');
+            
+            try {
+                console.log('Making API call to login endpoint...');
+                
+                // Call the backend API
+                const response = await fetch('http://localhost:8000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                console.log('Response received:', response.status, response.ok);
+                console.log('Response headers:', response.headers);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Login successful, data:', data);
+                    
+                    // Store authentication data
+                    localStorage.setItem('auth_token', data.access_token);
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
+                    console.log('Auth data stored in localStorage');
+                    
+                    // Show success message and redirect
+                    showMessage('Login successful! Redirecting...', 'success');
+                    console.log('Success message shown, starting redirect timer...');
+                    
+                    setTimeout(() => {
+                        console.log('=== REDIRECTING NOW ===');
+                        console.log('Current location:', window.location.href);
+                        console.log('Redirecting to dashboard.html');
+                        
+                        // Try multiple redirect methods
+                        try {
+                            console.log('Method 1: window.location.href');
+                            window.location.href = 'dashboard.html';
+                        } catch (e) {
+                            console.error('Method 1 failed:', e);
+                            try {
+                                console.log('Method 2: window.location.replace');
+                                window.location.replace('dashboard.html');
+                            } catch (e2) {
+                                console.error('Method 2 failed:', e2);
+                                try {
+                                    console.log('Method 3: window.location.assign');
+                                    window.location.assign('dashboard.html');
+                                } catch (e3) {
+                                    console.error('Method 3 failed:', e3);
+                                    console.log('All redirect methods failed!');
+                                }
+                            }
+                        }
+                    }, 1500);
+                } else {
+                    const error = await response.json();
+                    console.log('Login failed with error:', error);
+                    showMessage(`Login failed: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showMessage('Login failed. Please check your connection and try again.', 'error');
+            } finally {
+                submitBtn.classList.remove('loading');
+                console.log('Loading state removed from button');
+            }
+        }
+        
+        // Message display functionality
+        function showMessage(text, type) {
+            console.log('=== SHOW MESSAGE CALLED ===');
+            console.log('Text:', text, 'Type:', type);
+            
+            const messageContainer = document.getElementById('message-container');
+            const messageText = document.getElementById('message-text');
+            
+            console.log('Message container found:', messageContainer);
+            console.log('Message text element found:', messageText);
+            
+            if (!messageContainer || !messageText) {
+                console.error('Message elements not found!');
+                return;
+            }
+            
+            const spinner = messageContainer.querySelector('.spinner');
+            console.log('Spinner found:', spinner);
+            
+            // Set message text
+            messageText.textContent = text;
+            
+            // Remove all existing classes
+            messageContainer.className = 'message-container';
+            spinner.className = 'spinner';
+            
+            // Add appropriate classes
+            messageContainer.classList.add(type);
+            spinner.classList.add(type);
+            
+            // Show the message
+            messageContainer.style.display = 'block';
+            console.log('Message displayed with type:', type);
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    hideMessage();
+                }, 3000);
+            }
+            
+            // Auto-hide error messages after 5 seconds
+            if (type === 'error') {
+                setTimeout(() => {
+                    hideMessage();
+                }, 5000);
+            }
+        }
+        
+        function hideMessage() {
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.style.display = 'none';
+        }
+        
+        // Password toggle functionality
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const toggleBtn = input.parentElement.querySelector('.password-toggle');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggleBtn.classList.add('show-password');
+            } else {
+                input.type = 'password';
+                toggleBtn.classList.remove('show-password');
+            }
+        }
+        
 
-				<label class="label" for="login-password">Password</label>
-				<input class="input" id="login-password" type="password" placeholder="••••••••" required />
-				<div class="error-text" id="login-password-error">Password must be at least 6 characters.</div>
-
-				<div class="row" style="margin:12px 0 4px;">
-					<label class="checkbox"><input type="checkbox" id="remember" /> Keep me logged in</label>
-					<a href="#" style="text-decoration:none;color:var(--color-primary);font-weight:600;">Forgot Password?</a>
-				</div>
-
-				<button class="btn btn-primary" style="width:100%;margin-top:8px;" type="submit">Log In</button>
-			</form>
-			<div style="margin-top:14px;text-align:center;color:#6b7280;">
-				Don't have an account? <a href="signup.html">Sign Up</a>
-			</div>
-		</div>
-	</main>
-
-	<footer class="footer">
-		<div class="container">
-			<span>© <span id="year"></span> Cargo Laytime. All rights reserved.</span>
-		</div>
-	</footer>
-
-	<script src="assets/js/app.js"></script>
+    </script>
 </body>
 </html>

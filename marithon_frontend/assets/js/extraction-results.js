@@ -5,9 +5,40 @@
 	// Load extracted data from localStorage or URL params
 	function loadExtractedData() {
 		try {
-			// Try to get data from localStorage first
+			console.log('Loading extracted data...');
+			
+			// Try to get data from dashboard upload first
+			const extractionResults = localStorage.getItem('extraction_results');
+			const uploadedFileName = localStorage.getItem('uploaded_file_name');
+			
+			if (extractionResults && uploadedFileName) {
+				console.log('Found extraction results from dashboard:', extractionResults);
+				console.log('Uploaded file name:', uploadedFileName);
+				
+				const data = JSON.parse(extractionResults);
+				
+				// Update the page title and breadcrumb to show the uploaded file
+				if (uploadedFileName) {
+					document.title = `Laytime Calculator • ${uploadedFileName}`;
+					const breadcrumb = document.querySelector('.breadcrumb span');
+					if (breadcrumb) {
+						breadcrumb.textContent = uploadedFileName;
+					}
+				}
+				
+				populateForm(data);
+				
+				// Clear the localStorage after loading to prevent issues on refresh
+				// localStorage.removeItem('extraction_results');
+				// localStorage.removeItem('uploaded_file_name');
+				
+				return;
+			}
+
+			// Fallback: try to get data from old localStorage key
 			const storedData = localStorage.getItem('laytime_extraction_data');
 			if (storedData) {
+				console.log('Found legacy extraction data');
 				const data = JSON.parse(storedData);
 				populateForm(data);
 				return;
@@ -20,6 +51,8 @@
 				// In a real app, you'd fetch from API using this ID
 				console.log('Extraction ID:', extractionId);
 			}
+			
+			console.log('No extraction data found');
 		} catch (error) {
 			console.error('Error loading extracted data:', error);
 		}
@@ -27,36 +60,77 @@
 
 	// Populate form with extracted data
 	function populateForm(data) {
+		console.log('=== POPULATE FORM CALLED ===');
+		console.log('Data received:', data);
+		
 		if (data.business_data) {
 			const bd = data.business_data;
+			console.log('Business data found:', bd);
 			
-			// Set form values
+			// Set form values with detailed logging
+			console.log('Setting vessel:', bd.vessel);
 			setFieldValue('f-vessel', bd.vessel);
+			
+			console.log('Setting voyage_from:', bd.voyage_from);
 			setFieldValue('f-from', bd.voyage_from);
+			
+			console.log('Setting voyage_to:', bd.voyage_to);
 			setFieldValue('f-to', bd.voyage_to);
+			
+			console.log('Setting cargo:', bd.cargo);
 			setFieldValue('f-cargo', bd.cargo);
+			
+			console.log('Setting port:', bd.port);
 			setFieldValue('f-port', bd.port);
+			
+			console.log('Setting allowed_laytime:', bd.allowed_laytime);
 			setFieldValue('f-allowed', bd.allowed_laytime);
+			
+			console.log('Setting demurrage:', bd.demurrage);
 			setFieldValue('f-demurrage', bd.demurrage);
+			
+			console.log('Setting dispatch:', bd.dispatch);
 			setFieldValue('f-dispatch', bd.dispatch);
+			
+			console.log('Setting rate:', bd.rate);
 			setFieldValue('f-rate', bd.rate);
+			
+			console.log('Setting quantity:', bd.quantity);
 			setFieldValue('f-qty', bd.quantity);
 			
 			// Set operation dropdown
 			if (bd.operation) {
+				console.log('Setting operation:', bd.operation);
 				const operationSelect = document.getElementById('f-operation');
 				if (operationSelect) {
 					operationSelect.value = bd.operation;
+					console.log('Operation set to:', operationSelect.value);
+				} else {
+					console.error('Operation select element not found');
 				}
 			}
+			
+			console.log('Form population completed');
+		} else {
+			console.error('No business_data found in response');
+			console.log('Available data keys:', Object.keys(data));
 		}
 	}
 
 	// Helper function to set field values
 	function setFieldValue(fieldId, value) {
+		console.log(`Setting field ${fieldId} to value: ${value}`);
 		const field = document.getElementById(fieldId);
-		if (field && value != null && value !== '') {
-			field.value = value;
+		if (field) {
+			console.log(`Field ${fieldId} found, setting value`);
+			if (value != null && value !== '') {
+				field.value = value;
+				console.log(`Field ${fieldId} value set to: ${field.value}`);
+			} else {
+				console.log(`Field ${fieldId} value is null/empty, skipping`);
+			}
+		} else {
+			console.error(`Field ${fieldId} NOT FOUND in DOM`);
 		}
 	}
 

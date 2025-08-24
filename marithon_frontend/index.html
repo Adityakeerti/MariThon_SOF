@@ -1,88 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Cargo Laytime & Event Tracker</title>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="assets/css/theme.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargo Laytime and Event Tracker</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-	<header class="header">
-		<div class="container nav">
-			<a class="brand" href="./">
-				<span class="brand-badge">CL</span>
-				<span>Cargo Laytime</span>
-			</a>
-			<div class="nav-cta">
-				<a class="btn btn-ghost" href="login.html">Log In</a>
-				<a class="btn btn-accent" href="signup.html">Sign Up</a>
-			</div>
-		</div>
-	</header>
+    <div class="background-overlay"></div>
+    
+    <main class="main-container">
+        <div class="glass-container">
+            <h1 class="main-title">Cargo Laytime and Event Tracker</h1>
+            
+            <div class="button-group">
+                <button class="btn btn-login" onclick="handleLogin()">
+                    <span class="btn-text">Login</span>
+                    <div class="btn-overlay"></div>
+                </button>
+                
+                <button class="btn btn-signup" onclick="handleSignup()">
+                    <span class="btn-text">Create New Account</span>
+                    <div class="btn-overlay"></div>
+                </button>
+            </div>
+            
 
-	<main>
-		<section class="hero">
-			<div class="container hero-grid">
-				<div>
-					<h1 class="hero-title">Cargo Laytime & Event Tracker</h1>
-					<p class="hero-subtitle">Simplify maritime operations with precise laytime calculations, clean event timelines, and actionable insights designed for port agents, charterers, and vessel operators.</p>
-					<div class="hero-cta">
-						<a class="btn btn-primary" href="login.html">Log In</a>
-						<a class="btn btn-accent" href="signup.html">Create Free Account</a>
-					</div>
-				</div>
-				<div class="hero-card">
-					<div class="metrics">
-						<div class="metric">
-							<div class="value">99.9%</div>
-							<div class="label">Data reliability</div>
-						</div>
-						<div class="metric">
-							<div class="value">2x</div>
-							<div class="label">Faster statements</div>
-						</div>
-						<div class="metric">
-							<div class="value">24/7</div>
-							<div class="label">Event tracking</div>
-						</div>
-					</div>
-					<div style="height: 12px"></div>
-					<p style="margin:0;color:#6b7280">Designed with corporate-grade security and audit trails.</p>
-				</div>
-			</div>
-		</section>
+        </div>
+    </main>
 
-		<section class="section">
-			<div class="container">
-				<div class="features">
-					<div class="feature">
-						<h3>Accurate Laytime</h3>
-						<p>Automated time counting with exclusions for weather, weekends, and NOR status.</p>
-					</div>
-					<div class="feature">
-						<h3>Event Timeline</h3>
-						<p>Log arrivals, berthing, hatch, cargo ops, stoppages, and departures in real-time.</p>
-					</div>
-					<div class="feature">
-						<h3>Share & Export</h3>
-						<p>Generate professional Statements of Facts and export PDF/Excel instantly.</p>
-					</div>
-				</div>
-			</div>
-		</section>
-	</main>
-
-	<footer class="footer">
-		<div class="container">
-			<span>© <span id="year"></span> Cargo Laytime. All rights reserved.</span>
-		</div>
-	</footer>
-
-	<script>
-		document.getElementById('year').textContent = new Date().getFullYear();
-	</script>
+    <script src="assets/js/script.js"></script>
 </body>
 </html>

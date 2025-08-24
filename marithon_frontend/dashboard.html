@@ -1,94 +1,166 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Laytime Dashboard • Cargo Laytime</title>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="assets/css/theme.css" />
-	<link rel="stylesheet" href="assets/css/dashboard.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cargo LayTime</title>
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-	<header class="header">
-		<div class="container nav">
-			<a class="brand" href="index.html">
-				<span class="brand-badge">CL</span>
-				<span>Cargo Laytime</span>
-			</a>
-			<div class="nav-cta">
-				<a class="btn btn-ghost" href="index.html">Home</a>
-				<div class="profile-chip"><span class="avatar">U</span><div><div id="profile-name">User</div><div class="role" id="profile-role">Member</div></div></div>
-			</div>
-		</div>
-	</header>
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-ship"></i>
+                    <span>Cargo LayTime</span>
+                </div>
+            </div>
+            
 
-	<main class="workspace">
-		<div class="container">
-			<div class="workspace-card">
-				<div class="topbar">
-					<div class="tabbar" role="tablist">
-						<button class="tab active" data-tab="automated">Automated</button>
-						<button class="tab" data-tab="manual">Manual</button>
-						<button class="tab" data-tab="saved">Saved Laytime</button>
-					</div>
-					<div class="actions">
-						<button class="action-btn">Layspan Dashboard</button>
-						<button class="action-btn">Help</button>
-					</div>
-				</div>
+            
+            <div class="nav-right">
+                <div class="user-profile" id="userProfile">
+                    <div class="avatar" id="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-item" onclick="showAccountDetails()">
+                            <i class="fas fa-user-cog"></i>
+                            <span>Account Details</span>
+                        </div>
+                        <div class="dropdown-item" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Log Out</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-				<div class="panel" id="panel-automated">
-					<div class="grid">
-						<div class="dropzone" data-accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-							<div>
-								<div style="font-size:40px">☁️</div>
-								<h4>Upload SOF File</h4>
-								<p>(PDF or DOCX)</p>
-								<input class="hidden" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
-								<div class="file-name">No file chosen</div>
-							</div>
-						</div>
-						<div class="dropzone" data-accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-							<div>
-								<div style="font-size:40px">☁️</div>
-								<h4>Upload CP File (optional)</h4>
-								<p>(PDF or DOCX)</p>
-								<input class="hidden" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
-								<div class="file-name">No file chosen</div>
-							</div>
-						</div>
-					</div>
-					<div class="submit-area">
-						<button class="btn btn-primary" id="submit-automated">Submit</button>
-					</div>
-				</div>
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="dashboard-container">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <h2>Cargo LayTime Dashboard</h2>
+                <p>Upload your shipping documents to begin laytime calculations</p>
+            </div>
 
-				<div class="panel hidden" id="panel-manual">
-					<p style="margin:0;color:#6b7280">Build a laytime statement from scratch. Add events and pauses, then export.</p>
-					<div style="height:14px"></div>
-					<div class="actions">
-						<button class="btn">Add Event</button>
-						<button class="btn">Pause Counter</button>
-						<button class="btn btn-accent">Export PDF</button>
-					</div>
-				</div>
+            <!-- Upload Cards Container -->
+            <div class="upload-cards">
+                <!-- SOF File Upload Card -->
+                <div class="upload-card" id="sofCard">
+                    <div class="card-header">
+                        <div class="upload-icon">
+                            <i class="fas fa-file-upload"></i>
+                        </div>
+                        <h3>Upload SOF File</h3>
+                        <p>PDF or DOCX format</p>
+                    </div>
+                    
+                    <div class="upload-area" id="sofUploadArea">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop your SOF file here</p>
+                            <p class="upload-hint">or</p>
+                            <button class="choose-file-btn" onclick="document.getElementById('sofFileInput').click()">
+                                Choose File
+                            </button>
+                        </div>
+                        <input type="file" id="sofFileInput" accept=".pdf,.docx" style="display: none;">
+                    </div>
+                    
+                    <div class="file-info" id="sofFileInfo" style="display: none;">
+                        <div class="file-details">
+                            <i class="fas fa-file-alt"></i>
+                            <span class="file-name" id="sofFileName"></span>
+                            <button class="remove-file" onclick="removeFile('sof')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-				<div class="panel hidden" id="panel-saved">
-					<div class="saved-list" id="saved-list"></div>
-				</div>
-			</div>
-		</div>
-	</main>
+                <!-- CP File Upload Card -->
+                <div class="upload-card" id="cpCard">
+                    <div class="card-header">
+                        <div class="upload-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <h3>Upload CP File</h3>
+                        <p>PDF or DOCX format (Optional)</p>
+                    </div>
+                    
+                    <div class="upload-area" id="cpUploadArea">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop your CP file here</p>
+                            <p class="upload-hint">or</p>
+                            <button class="choose-file-btn" onclick="document.getElementById('cpFileInput').click()">
+                                Choose File
+                            </button>
+                        </div>
+                        <input type="file" id="cpFileInput" accept=".pdf,.docx" style="display: none;">
+                    </div>
+                    
+                    <div class="file-info" id="cpFileInfo" style="display: none;">
+                        <div class="file-details">
+                            <i class="fas fa-file-alt"></i>
+                            <span class="file-name" id="cpFileName"></span>
+                            <button class="remove-file" onclick="removeFile('cp')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-	<footer class="footer">
-		<div class="container">
-			<span>© <span id="year"></span> Cargo Laytime. All rights reserved.</span>
-		</div>
-	</footer>
+            <!-- Submit Button -->
+            <div class="submit-section">
+                <button class="submit-btn" id="submitBtn" onclick="submitFiles()">
+                    <span class="btn-text">Submit Files</span>
+                    <div class="btn-overlay"></div>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
 
-	<script src="assets/js/app.js"></script>
-	<script src="assets/js/dashboard.js"></script>
+            <!-- Progress Section -->
+            <div class="progress-section" id="progressSection" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">Processing files...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Cargo LayTime. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-check-circle success-icon"></i>
+                <h3>Upload Successful!</h3>
+            </div>
+            <div class="modal-body">
+                <p>Your files have been uploaded successfully. Processing will begin shortly.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" onclick="closeModal()">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/dashboard.js"></script>
 </body>
 </html>

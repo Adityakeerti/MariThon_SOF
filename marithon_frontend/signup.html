@@ -1,69 +1,97 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Sign Up • Cargo Laytime</title>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="assets/css/theme.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Cargo Laytime and Event Tracker</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-	<header class="header">
-		<div class="container nav">
-			<a class="brand" href="index.html">
-				<span class="brand-badge">CL</span>
-				<span>Cargo Laytime</span>
-			</a>
-			<div class="nav-cta">
-				<a class="btn btn-ghost" href="index.html">Home</a>
-				<a class="btn btn-ghost" href="login.html">Log In</a>
-			</div>
-		</div>
-	</header>
+    <div class="background-overlay"></div>
+    
+    <main class="main-container">
+        <div class="glass-container">
+            <h1 class="main-title">Create Account</h1>
+            <p class="signup-subtitle">Join us to streamline your maritime operations</p>
+            
+            <form class="signup-form" onsubmit="handleSignupSubmit(event)">
+                <!-- Success/Error Message Container -->
+                <div id="message-container" class="message-container" style="display: none;">
+                    <div class="message-content">
+                        <div class="message-icon">
+                            <div class="spinner"></div>
+                        </div>
+                        <div class="message-text" id="message-text"></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" id="firstName" name="firstName" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-input" required>
+                </div>
+                
 
-	<main class="center">
-		<div class="card">
-			<h1>Create your account</h1>
-			<form id="signup-form" novalidate>
-				<label class="label" for="signup-name">Full name</label>
-				<input class="input" id="signup-name" type="text" placeholder="Jane Doe" required />
-				<div class="error-text" id="signup-name-error">Please enter your full name.</div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-input-container">
+                        <input type="password" id="password" name="password" class="form-input" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <div class="password-input-container">
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" name="terms" required>
+                        <span class="checkmark"></span>
+                        I agree to the <a href="#" class="link-text">Terms of Service</a> and <a href="#" class="link-text">Privacy Policy</a>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-signup">
+                    <span class="btn-text">Create Account</span>
+                    <div class="btn-overlay"></div>
+                </button>
+            </form>
+            
+            <div class="login-link">
+                <p>Already have an account? <a href="login.html" class="link-text">Sign in here</a></p>
+            </div>
+            
+            <div class="back-home">
+                <a href="index.html" class="back-link">← Back to Home</a>
+            </div>
+        </div>
+    </main>
 
-				<label class="label" for="signup-company">Company (optional)</label>
-				<input class="input" id="signup-company" type="text" placeholder="Your Company" />
-
-				<label class="label" for="signup-email">Email</label>
-				<input class="input" id="signup-email" type="email" placeholder="your@email.com" required />
-				<div class="error-text" id="signup-email-error">Please enter a valid email address.</div>
-
-				<label class="label" for="signup-password">Password</label>
-				<input class="input" id="signup-password" type="password" placeholder="Minimum 8 characters" required />
-				<div class="error-text" id="signup-password-error">Password must be at least 8 characters.</div>
-
-				<label class="label" for="signup-confirm">Confirm Password</label>
-				<input class="input" id="signup-confirm" type="password" placeholder="Repeat your password" required />
-				<div class="error-text" id="signup-confirm-error">Passwords must match.</div>
-
-				<div class="row" style="margin:12px 0 4px;">
-					<label class="checkbox"><input type="checkbox" id="terms" /> I agree to the Terms</label>
-				</div>
-
-				<button class="btn btn-primary" style="width:100%;margin-top:8px;" type="submit">Create Account</button>
-			</form>
-			<div style="margin-top:14px;text-align:center;color:#6b7280;">
-				Already have an account? <a href="login.html">Log In</a>
-			</div>
-		</div>
-	</main>
-
-	<footer class="footer">
-		<div class="container">
-			<span>© <span id="year"></span> Cargo Laytime. All rights reserved.</span>
-		</div>
-	</footer>
-
-	<script src="assets/js/app.js"></script>
+    <script src="assets/js/script.js"></script>
 </body>
 </html>
