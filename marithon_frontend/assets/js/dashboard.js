@@ -146,7 +146,8 @@ function setupDragAndDrop() {
         area.addEventListener('dragover', handleDragOver);
         area.addEventListener('dragleave', handleDragLeave);
         area.addEventListener('drop', handleDrop);
-        area.addEventListener('click', handleAreaClick);
+        // Removed the click event listener to prevent double file picker opening
+        // The button onclick in HTML will handle file selection
     });
 }
 
@@ -187,13 +188,8 @@ function handleDrop(e) {
     }
 }
 
-// Handle Area Click
-function handleAreaClick(e) {
-    if (e.target.classList.contains('upload-area') || e.target.closest('.upload-content')) {
-        const fileType = e.currentTarget.id.replace('UploadArea', '');
-        document.getElementById(`${fileType}FileInput`).click();
-    }
-}
+// Handle Area Click - REMOVED to prevent double file picker opening
+// The button onclick in HTML handles file selection directly
 
 // Validate File Type
 function validateFileType(file) {
