@@ -6,26 +6,55 @@
 	<title>Laytime Calculator • Cargo Laytime</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="assets/css/theme.css" />
 	<link rel="stylesheet" href="assets/css/dashboard.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-	<header class="header">
-		<div class="container nav">
-			<a class="brand" href="dashboard.html">
-				<span class="brand-badge">CL</span>
-				<span>Cargo Laytime</span>
-			</a>
-			<div class="nav-cta">
-				<a class="btn btn-ghost" href="dashboard.html">Back to Dashboard</a>
+	<!-- Top Navigation Bar -->
+	<nav class="top-nav">
+		<div class="nav-container">
+			<div class="nav-left">
+				<div class="logo">
+					<i class="fas fa-ship"></i>
+					<span>Cargo LayTime</span>
+				</div>
+			</div>
+			
+			<div class="nav-right">
+				<div class="user-profile" id="userProfile">
+					<div class="avatar" id="avatar">
+						<i class="fas fa-user"></i>
+					</div>
+					<div class="dropdown-menu" id="dropdownMenu">
+						<div class="dropdown-item" onclick="showAccountDetails()">
+							<i class="fas fa-user-cog"></i>
+							<span>Account Details</span>
+						</div>
+						<div class="dropdown-item" onclick="logout()">
+							<i class="fas fa-sign-out-alt"></i>
+							<span>Log Out</span>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
-	</header>
+	</nav>
 
-	<main class="workspace">
-		<div class="container">
-			<h2 style="margin:0 0 12px;color:var(--color-primary)">Laytime Calculator</h2>
+	<!-- Main Content Area -->
+	<main class="main-content">
+		<div class="dashboard-container">
+			<!-- Page Header -->
+			<div class="page-header">
+				<div class="breadcrumb">
+					<a href="dashboard.html">Dashboard</a> / <span>Laytime Calculator</span>
+				</div>
+				<div class="page-actions">
+					<a href="dashboard.html" class="action-btn">Back to Dashboard</a>
+				</div>
+			</div>
+
 			<div class="workspace-card">
 				<div class="grid" style="align-items:start;">
 					<div class="panel" style="background:#fff;">
@@ -61,9 +90,10 @@
 		</div>
 	</main>
 
+	<!-- Footer -->
 	<footer class="footer">
-		<div class="container">
-			<span>© <span id="year"></span> Cargo Laytime. All rights reserved.</span>
+		<div class="footer-content">
+			<p>&copy; 2025 Cargo LayTime. All rights reserved.</p>
 		</div>
 	</footer>
 

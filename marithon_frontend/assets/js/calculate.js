@@ -2,6 +2,40 @@
 	const yearEl = document.getElementById('year');
 	if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+	// User Profile Dropdown Functionality
+	function setupUserProfile() {
+		const userProfile = document.getElementById('userProfile');
+		const dropdownMenu = document.getElementById('dropdownMenu');
+		
+		if (userProfile && dropdownMenu) {
+			userProfile.addEventListener('click', function(e) {
+				e.stopPropagation();
+				dropdownMenu.classList.toggle('show');
+			});
+			
+			// Close dropdown when clicking outside
+			document.addEventListener('click', function() {
+				dropdownMenu.classList.remove('show');
+			});
+		}
+	}
+
+	function showAccountDetails() {
+		alert('Account details functionality coming soon!');
+	}
+
+	function logout() {
+		// Clear any stored data
+		localStorage.clear();
+		// Redirect to login page
+		window.location.href = 'index.html';
+	}
+
+	// Initialize user profile functionality
+	document.addEventListener('DOMContentLoaded', function() {
+		setupUserProfile();
+	});
+
 	// Prefill from localStorage if present
 	try {
 		const raw = localStorage.getItem('laytime_prefill');

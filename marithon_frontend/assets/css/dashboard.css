@@ -98,7 +98,8 @@ body {
     transition: all 0.3s ease;
 }
 
-.user-profile:hover .dropdown-menu {
+.user-profile:hover .dropdown-menu,
+.dropdown-menu.show {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);

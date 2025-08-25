@@ -6,27 +6,45 @@
 	<title>Laytime Calculator • Cargo Laytime</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="assets/css/theme.css" />
 	<link rel="stylesheet" href="assets/css/extraction-results.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	
 	<!-- External Libraries for Export Functionality -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-	<header class="header">
-		<div class="container nav">
-			<a class="brand" href="index.html">
-				<span class="brand-badge">CL</span>
-				<span>Cargo Laytime</span>
-			</a>
-			<div class="nav-cta">
-				<a class="btn btn-ghost" href="dashboard.html">Dashboard</a>
-				<div class="profile-chip"><span class="avatar">U</span><div><div id="profile-name">User</div><div class="role" id="profile-role">Member</div></div></div>
+	<!-- Top Navigation Bar -->
+	<nav class="top-nav">
+		<div class="nav-container">
+			<div class="nav-left">
+				<div class="logo">
+					<i class="fas fa-ship"></i>
+					<span>Cargo LayTime</span>
+				</div>
+			</div>
+			
+			<div class="nav-right">
+				<div class="user-profile" id="userProfile">
+					<div class="avatar" id="avatar">
+						<i class="fas fa-user"></i>
+					</div>
+					<div class="dropdown-menu" id="dropdownMenu">
+						<div class="dropdown-item" onclick="showAccountDetails()">
+							<i class="fas fa-user-cog"></i>
+							<span>Account Details</span>
+						</div>
+						<div class="dropdown-item" onclick="logout()">
+							<i class="fas fa-sign-out-alt"></i>
+							<span>Log Out</span>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
-	</header>
+	</nav>
 
 	<!-- Export Popup Modal -->
 	<div class="export-popup-overlay hidden" id="export-popup-overlay">
@@ -106,53 +124,62 @@
 					
 					<div class="data-form" id="data-form">
 						<div class="form-grid">
-							<div class="form-item">
-								<label class="label">CREATED FOR</label>
-								<input class="input-sm" id="f-vessel" placeholder="Vessel / Account name" />
+							<!-- Left Column -->
+							<div class="form-column">
+								<div class="form-item">
+									<label class="label">CREATED FOR</label>
+									<input class="input-sm" id="f-vessel" placeholder="Vessel / Account name" />
+								</div>
+								<div class="form-item">
+									<label class="label">VOYAGE TO</label>
+									<input class="input-sm" id="f-to" placeholder="Destination port" />
+								</div>
+								<div class="form-item">
+									<label class="label">PORT</label>
+									<input class="input-sm" id="f-port" placeholder="Port name" />
+								</div>
+								<div class="form-item">
+									<label class="label">DEMURRAGE ($/DAY)</label>
+									<input class="input-sm" id="f-demurrage" type="number" placeholder="e.g., 5000" />
+								</div>
+								<div class="form-item">
+									<label class="label">LOAD/DISCH (MT/DAY)</label>
+									<input class="input-sm" id="f-rate" type="number" placeholder="e.g., 1000" />
+								</div>
 							</div>
-							<div class="form-item">
-								<label class="label">VOYAGE FROM</label>
-								<input class="input-sm" id="f-from" placeholder="Origin port" />
+							
+							<!-- Right Column -->
+							<div class="form-column">
+								<div class="form-item">
+									<label class="label">VOYAGE FROM</label>
+									<input class="input-sm" id="f-from" placeholder="Origin port" />
+								</div>
+								<div class="form-item">
+									<label class="label">CARGO</label>
+									<input class="input-sm" id="f-cargo" placeholder="Cargo description" />
+								</div>
+								<div class="form-item">
+									<label class="label">OPERATION</label>
+									<select class="select" id="f-operation">
+										<option value="load">Load</option>
+										<option value="discharge" selected>Discharge</option>
+									</select>
+								</div>
+								<div class="form-item">
+									<label class="label">DISPATCH ($/DAY)</label>
+									<input class="input-sm" id="f-dispatch" type="number" placeholder="e.g., 2500" />
+								</div>
+								<div class="form-item">
+									<label class="label">CARGO QTY (MT)</label>
+									<input class="input-sm" id="f-qty" type="number" placeholder="e.g., 47000" />
+								</div>
 							</div>
-							<div class="form-item">
-								<label class="label">VOYAGE TO</label>
-								<input class="input-sm" id="f-to" placeholder="Destination port" />
-							</div>
-							<div class="form-item">
-								<label class="label">CARGO</label>
-								<input class="input-sm" id="f-cargo" placeholder="Cargo description" />
-							</div>
-							<div class="form-item">
-								<label class="label">PORT</label>
-								<input class="input-sm" id="f-port" placeholder="Port name" />
-							</div>
-							<div class="form-item">
-								<label class="label">OPERATION</label>
-								<select class="select" id="f-operation">
-									<option value="load">Load</option>
-									<option value="discharge" selected>Discharge</option>
-								</select>
-							</div>
-							<div class="form-item">
-								<label class="label">ALLOWED LAYTIME (DAYS)</label>
-								<input class="input-sm" id="f-allowed" type="number" placeholder="e.g., 5" />
-							</div>
-							<div class="form-item">
-								<label class="label">DEMURRAGE ($/DAY)</label>
-								<input class="input-sm" id="f-demurrage" type="number" placeholder="e.g., 5000" />
-							</div>
-							<div class="form-item">
-								<label class="label">DISPATCH ($/DAY)</label>
-								<input class="input-sm" id="f-dispatch" type="number" placeholder="e.g., 2500" />
-							</div>
-							<div class="form-item">
-								<label class="label">LOAD/DISCH (MT/DAY)</label>
-								<input class="input-sm" id="f-rate" type="number" placeholder="e.g., 1000" />
-							</div>
-							<div class="form-item">
-								<label class="label">CARGO QTY (MT)</label>
-								<input class="input-sm" id="f-qty" type="number" placeholder="e.g., 47000" />
-							</div>
+						</div>
+						
+						<!-- ALLOWED LAYTIME field spans both columns -->
+						<div class="form-item full-width">
+							<label class="label">ALLOWED LAYTIME (DAYS)</label>
+							<input class="input-sm" id="f-allowed" type="number" placeholder="e.g., 5" />
 						</div>
 						
 						<div class="form-actions">
@@ -220,8 +247,6 @@
 								</table>
 							</div>
 						</div>
-
-
 					</div>
 				</div>
 			</div>
