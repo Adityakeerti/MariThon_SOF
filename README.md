@@ -57,10 +57,19 @@ MariThon/
 │   ├── extraction-results.html  # Results page
 │   └── calculate.html    # Laytime calculator
 ├── SOF Samples/          # Sample PDF files for testing
-├── setup.py              # Unified setup script (Windows/Mac/Linux)
+├── setup.py              # Enhanced setup script with automation
+├── setup.bat             # Windows one-click setup
+├── setup.sh              # Unix one-click setup
+├── scripts/               # Startup scripts (created by setup)
+│   ├── start_both.*      # Start both servers
+│   ├── start_backend.*   # Start backend only
+│   └── start_frontend.*  # Start frontend only
 ├── main_venv/            # Main project virtual environment
+├── QUICK_START.md        # Quick start guide (created by setup)
 └── README.md             # This file
 ```
+
+**Note**: The `scripts/` folder and `QUICK_START.md` are automatically created when you run the setup script.
 
 ## 🛠️ Prerequisites
 
@@ -71,15 +80,50 @@ MariThon/
 
 ## 📦 Installation & Setup
 
-### Quick Start Solutions
+### 🚀 One-Click Setup Solutions
 
-#### Solution 1: One-Command Setup (All Platforms)
+### 🎯 **Complete Automation - Just Run One File!**
+
+The setup scripts will automatically handle everything:
+- 🏗️ **Virtual Environments**: Creates `backend_venv` and `main_venv`
+- 📦 **Dependencies**: Installs all Python packages automatically
+- ⚙️ **Configuration**: Sets up database and JWT settings
+- 🚀 **Startup Scripts**: Creates easy-to-use server startup scripts
+- 📚 **Documentation**: Generates `QUICK_START.md` guide
+
+#### Solution 1: Ultra-Simple Setup (Windows)
+```bash
+# Just double-click this file after cloning:
+setup.bat
+```
+
+**What happens automatically:**
+- ✅ Creates virtual environments
+- ✅ Installs all dependencies
+- ✅ Sets up database configuration
+- ✅ Creates startup scripts
+- ✅ Generates quick start guide
+
+#### Solution 2: Ultra-Simple Setup (macOS/Linux)
+```bash
+# Make executable and run:
+chmod +x setup.sh && ./setup.sh
+```
+
+**What happens automatically:**
+- ✅ Creates virtual environments
+- ✅ Installs all dependencies
+- ✅ Sets up database configuration
+- ✅ Creates startup scripts
+- ✅ Generates quick start guide
+
+#### Solution 3: Python Script Setup (All Platforms)
 ```bash
 # Clone the repository
 git clone <your-repository-url>
 cd MariThon
 
-# Run the unified setup script
+# Run the Python setup script
 python setup.py
 ```
 
@@ -290,7 +334,23 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 ## 🚀 Running the Application
 
-### 1. Start the Backend Server
+### 🎯 One-Click Startup (After Running Setup)
+
+After running the setup script, you'll have convenient startup scripts:
+
+#### Windows Users
+- **Start Both Servers**: Double-click `scripts\start_both.bat`
+- **Backend Only**: Double-click `scripts\start_backend.bat`
+- **Frontend Only**: Double-click `scripts\start_frontend.bat`
+
+#### macOS/Linux Users
+- **Start Both Servers**: `./scripts/start_both.sh`
+- **Backend Only**: `./scripts/start_backend.sh`
+- **Frontend Only**: `./scripts/start_frontend.sh`
+
+### 🔧 Manual Startup
+
+#### 1. Start the Backend Server
 
 ```bash
 # Navigate to backend directory
@@ -582,4 +642,17 @@ cd marithon_frontend && python -m http.server 8080
 
 # Database Setup
 cd backend && python setup_db.py
+```
+
+### 🚀 One-Click Startup (After Setup)
+```bash
+# Windows: Double-click these files
+scripts\start_both.bat      # Start both servers
+scripts\start_backend.bat    # Backend only
+scripts\start_frontend.bat   # Frontend only
+
+# macOS/Linux: Run these commands
+./scripts/start_both.sh      # Start both servers
+./scripts/start_backend.sh   # Backend only
+./scripts/start_frontend.sh  # Frontend only
 ```
