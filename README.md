@@ -2,6 +2,28 @@
 
 A comprehensive maritime operations application for laytime calculations, event tracking, and document processing. Built with FastAPI backend and modern HTML/CSS/JavaScript frontend.
 
+## 📑 Table of Contents
+
+- [🚀 Features](#-features)
+- [🏗️ Project Structure](#️-project-structure)
+- [🛠️ Prerequisites](#️-prerequisites)
+- [📦 Installation & Setup](#-installation--setup)
+- [🔧 Detailed Setup](#-detailed-setup)
+- [🚀 Running the Application](#-running-the-application)
+- [🧪 Testing](#-testing)
+- [🔧 Key Technologies](#-key-technologies)
+- [📚 API Documentation](#-api-documentation)
+- [🚨 Troubleshooting](#-troubleshooting)
+- [📱 Using the Application](#-using-the-application)
+- [🛑 Stopping the Application](#-stopping-the-application)
+- [🔄 Restarting the Application](#-restarting-the-application)
+- [🔄 Development Workflow](#-development-workflow)
+- [📚 Additional Resources](#-additional-resources)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [🆘 Support](#-support)
+- [📋 Quick Reference](#-quick-reference)
+
 ## 🚀 Features
 
 - **PDF Document Processing**: Upload and parse Statement of Facts (SoF) documents
@@ -23,6 +45,8 @@ MariThon/
 │   ├── config/            # Configuration files
 │   ├── tests/             # Test files
 │   ├── requirements.txt   # Python dependencies
+│   ├── setup_db.py        # Database setup script
+│   ├── create_tables.sql  # SQL schema file
 │   └── backend_venv/      # Backend virtual environment
 ├── marithon_frontend/     # Frontend application
 │   ├── assets/           # CSS, JavaScript, and other assets
@@ -30,11 +54,10 @@ MariThon/
 │   ├── login.html        # Authentication
 │   ├── signup.html       # User registration
 │   ├── dashboard.html    # Main dashboard
-│   └── extraction-results.html  # Results page
+│   ├── extraction-results.html  # Results page
+│   └── calculate.html    # Laytime calculator
 ├── SOF Samples/          # Sample PDF files for testing
 ├── setup.py              # Unified setup script (Windows/Mac/Linux)
-├── setup.bat             # Windows setup script
-├── setup.sh              # Unix setup script
 ├── main_venv/            # Main project virtual environment
 └── README.md             # This file
 ```
@@ -50,19 +73,7 @@ MariThon/
 
 ### Quick Start Solutions
 
-#### Solution 1: One-Command Setup (Windows)
-```bash
-# Run the automated setup script
-setup.bat
-```
-
-#### Solution 2: One-Command Setup (macOS/Linux)
-```bash
-# Make script executable and run
-chmod +x setup.sh && ./setup.sh
-```
-
-#### Solution 3: Unified Setup Script
+#### Solution 1: One-Command Setup (All Platforms)
 ```bash
 # Clone the repository
 git clone <your-repository-url>
@@ -72,10 +83,10 @@ cd MariThon
 python setup.py
 ```
 
-#### Solution 4: Manual Setup (Recommended for First-Time Users)
+#### Solution 2: Manual Setup (Recommended for First-Time Users)
 Follow the detailed step-by-step instructions in the [Detailed Setup](#-detailed-setup) section below.
 
-#### Solution 5: Database-First Setup (For Advanced Users)
+#### Solution 3: Database-First Setup (For Advanced Users)
 If you prefer to set up the database first:
 
 ```sql
@@ -153,10 +164,10 @@ cd backend
 #### 2.2 Create Virtual Environment
 ```bash
 # Windows
-python -m venv venv
+python -m venv backend_venv
 
 # macOS/Linux
-python3 -m venv venv
+python3 -m venv backend_venv
 ```
 
 #### 2.3 Activate Virtual Environment
@@ -193,23 +204,49 @@ pip list
 python -c "import fastapi; print('FastAPI installed successfully')"
 ```
 
-### Step 3: Main Directory Setup
+### Step 3: Database Setup
 
-#### 3.1 Return to Main Directory
+#### 3.1 Run Database Setup Script (Recommended)
+```bash
+# Make sure you're in the backend directory with virtual environment activated
+python setup_db.py
+```
+
+This script will:
+- Create the `marithon_db` database
+- Create all necessary tables
+- Insert default admin and demo users
+- Set up proper database structure
+
+#### 3.2 Alternative: Manual SQL Setup
+If you prefer to run SQL manually:
+```bash
+# Connect to MySQL and run:
+mysql -u root -p < create_tables.sql
+```
+
+#### 3.3 Verify Database Setup
+After setup, you'll have these default users:
+- **Admin**: `admin@marithon.com` / `admin123`
+- **Demo**: `demo@marithon.com` / `demo123`
+
+### Step 4: Main Directory Setup
+
+#### 4.1 Return to Main Directory
 ```bash
 cd ..
 ```
 
-#### 3.2 Create Main Virtual Environment
+#### 4.2 Create Main Virtual Environment
 ```bash
 # Windows
-python -m venv .venv
+python -m venv main_venv
 
 # macOS/Linux
-python3 -m venv .venv
+python3 -m venv main_venv
 ```
 
-#### 3.3 Activate Main Virtual Environment
+#### 4.3 Activate Main Virtual Environment
 ```bash
 # Windows (PowerShell)
 main_venv\Scripts\Activate.ps1
@@ -223,7 +260,7 @@ source main_venv/bin/activate
 
 **Important**: You should see `(main_venv)` at the beginning of your command prompt when activated.
 
-#### 3.4 Install Main Directory Dependencies
+#### 4.4 Install Main Directory Dependencies
 ```bash
 # Upgrade pip first
 pip install --upgrade pip
@@ -232,7 +269,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Step 4: Configure Backend
+### Step 5: Configure Backend
 
 Create `backend/config/local_settings.py`:
 ```python
@@ -244,7 +281,7 @@ DB_NAME = 'marithon_db'
 DB_PORT = 3306
 
 # JWT settings
-SECRET_KEY = 'your-secret-key-here'
+SECRET_KEY = 'your-super-secret-key-change-this-in-production'
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 ```
@@ -268,6 +305,13 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The backend will be available at: `http://localhost:8000`
+
+**API Endpoints Available**:
+- `POST /auth/signup` - User registration
+- `POST /auth/login` - User authentication
+- `POST /extract` - File processing
+- `GET /health` - Health check
+- `GET /` - Root endpoint
 
 ### 2. Start the Frontend
 
@@ -293,7 +337,9 @@ The frontend will be available at: `http://localhost:8080`
 
 1. **Start both servers** (backend on 8000, frontend on 8080)
 2. **Open frontend** in browser
-3. **Create account** or login
+3. **Login with default credentials**:
+   - Email: `admin@marithon.com`
+   - Password: `admin123`
 4. **Upload PDF** from `SOF Samples/` folder
 5. **Verify extraction** shows correct business data
 
@@ -338,6 +384,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 - Verify MySQL is running
 - Check credentials in `backend/config/local_settings.py`
 - Ensure database `marithon_db` exists
+- Run `python setup_db.py` to recreate database if needed
 
 **PDF Parsing Issues**
 - Check if `pdfplumber` is installed
@@ -376,6 +423,13 @@ backend_venv\Scripts\Activate.bat  # Windows Command Prompt
 # or
 source backend_venv/bin/activate   # macOS/Linux
 ```
+
+**Git Conflicts Resolved**
+The backend has been cleaned up and all Git merge conflicts have been resolved:
+- ✅ Fixed `pipeline_simple.py` PDF parsing logic
+- ✅ Kept working mysql.connector database approach
+- ✅ Kept working Pydantic schemas
+- ✅ Created proper database setup scripts
 
 ### Getting Help
 
@@ -505,3 +559,27 @@ If you encounter issues:
 **🎉 MariThon is ready to streamline your maritime operations!**
 
 **🚨 Critical Note**: If you encounter import errors for PyTorch, sentence-transformers, or other ML libraries, the automated setup failed. Please follow the detailed setup instructions above for manual dependency installation.
+
+---
+
+## 📋 Quick Reference
+
+### Default Credentials
+- **Admin**: `admin@marithon.com` / `admin123`
+- **Demo**: `demo@marithon.com` / `demo123`
+
+### Ports
+- **Backend API**: 8000
+- **Frontend**: 8080
+
+### Key Commands
+```bash
+# Start Backend
+cd backend && backend_venv\Scripts\Activate.ps1 && uvicorn app.main:app --reload
+
+# Start Frontend  
+cd marithon_frontend && python -m http.server 8080
+
+# Database Setup
+cd backend && python setup_db.py
+```
