@@ -111,11 +111,36 @@
     border-bottom: 2px solid #e5e7eb;
 }
 
+.panel-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .panel-header h2 {
     font-size: 1.5rem;
     font-weight: 600;
     color: #1f2937;
     margin: 0;
+}
+
+.dispatch-value-btn {
+    background: #10b981;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.dispatch-value-btn:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 /* Success Banner */
