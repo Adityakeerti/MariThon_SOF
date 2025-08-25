@@ -2,6 +2,8 @@
 
 A robust FastAPI backend for the MariThon Cargo Laytime & Event Tracker application. This backend provides comprehensive maritime document processing, business data extraction, and laytime calculation services.
 
+> **📖 Note**: This is the backend-specific documentation. For complete project setup and frontend instructions, see the main [README.md](../README.md) in the project root.
+
 ## 🏗️ Architecture Overview
 
 The backend is built with a modular, service-oriented architecture:
