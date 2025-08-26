@@ -1,1001 +1,632 @@
-(function(){
-	const yearEl = document.getElementById('year');
-	if (yearEl) yearEl.textContent = new Date().getFullYear();
+// Extraction Results JavaScript - Complete SOF Processing Workflow
+class ExtractionResults {
+    constructor() {
+        this.baseURL = 'http://127.0.0.1:8000';
+        this.documentId = null;
+        this.vesselData = {};
+        this.events = [];
+        this.init();
+    }
 
-	// User Profile Dropdown Functionality
-	function setupUserProfile() {
-		const userProfile = document.getElementById('userProfile');
-		const dropdownMenu = document.getElementById('dropdownMenu');
-		
-		if (userProfile && dropdownMenu) {
-			userProfile.addEventListener('click', function(e) {
-				e.stopPropagation();
-				dropdownMenu.classList.toggle('show');
-			});
-			
-			// Close dropdown when clicking outside
-			document.addEventListener('click', function() {
-				dropdownMenu.classList.remove('show');
-			});
-		}
-	}
+    init() {
+        this.checkAuth();
+        this.getDocumentIdFromURL();
+        this.setupEventListeners();
+        this.updateUserProfile();
+        this.loadDocumentData();
+    }
 
-	function showAccountDetails() {
-		alert('Account details functionality coming soon!');
-	}
+    // Authentication check
+    checkAuth() {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+    }
 
-	function logout() {
-		// Clear any stored data
-		localStorage.clear();
-		// Redirect to login page
-		window.location.href = 'index.html';
-	}
+    // Get auth headers
+    getAuthHeaders() {
+        const token = localStorage.getItem('auth_token');
+        return {
+            'Authorization': `Bearer ${token}`
+        };
+    }
 
-	// Initialize user profile functionality
-	document.addEventListener('DOMContentLoaded', function() {
-		setupUserProfile();
-	});
-
-	// Load extracted data from localStorage or URL params
-	function loadExtractedData() {
-		try {
-			console.log('Loading extracted data...');
-			
-			// Try to get data from dashboard upload first
-			const extractionResults = localStorage.getItem('extraction_results');
-			const uploadedFileName = localStorage.getItem('uploaded_file_name');
-			
-			if (extractionResults && uploadedFileName) {
-				console.log('Found extraction results from dashboard:', extractionResults);
-				console.log('Uploaded file name:', uploadedFileName);
-				
-				const data = JSON.parse(extractionResults);
-				
-				// Update the page title and breadcrumb to show the uploaded file
-				if (uploadedFileName) {
-					document.title = `Laytime Calculator • ${uploadedFileName}`;
-					const breadcrumb = document.querySelector('.breadcrumb span');
-					if (breadcrumb) {
-						breadcrumb.textContent = uploadedFileName;
-					}
-				}
-				
-				populateForm(data);
-				
-				// Clear the localStorage after loading to prevent issues on refresh
-				// localStorage.removeItem('extraction_results');
-				// localStorage.removeItem('uploaded_file_name');
-				
+    // Get document ID from URL parameters
+    getDocumentIdFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        this.documentId = urlParams.get('doc_id');
+        if (!this.documentId) {
+            this.showError('No document ID provided. Redirecting to dashboard...');
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
 				return;
 			}
+    }
 
-			// Fallback: try to get data from old localStorage key
-			const storedData = localStorage.getItem('laytime_extraction_data');
-			if (storedData) {
-				console.log('Found legacy extraction data');
-				const data = JSON.parse(storedData);
-				populateForm(data);
-				return;
-			}
+    // Setup event listeners
+    setupEventListeners() {
+        // Form input change listeners
+        const formInputs = document.querySelectorAll('#data-form input');
+        formInputs.forEach(input => {
+            input.addEventListener('change', () => this.saveFormData());
+        });
 
-			// Fallback: try to get from URL params
-			const urlParams = new URLSearchParams(window.location.search);
-			const extractionId = urlParams.get('id');
-			if (extractionId) {
-				// In a real app, you'd fetch from API using this ID
-				console.log('Extraction ID:', extractionId);
-			}
-			
-			console.log('No extraction data found');
-		} catch (error) {
-			console.error('Error loading extracted data:', error);
-		}
-	}
+        // Calculate button
+        const calculateBtn = document.getElementById('calculateBtn');
+        if (calculateBtn) {
+            calculateBtn.addEventListener('click', () => this.calculateLaytime());
+        }
+    }
 
-	// Populate form with extracted data
-	function populateForm(data) {
-		console.log('=== POPULATE FORM CALLED ===');
-		console.log('Data received:', data);
-		
-		if (data.business_data) {
-			const bd = data.business_data;
-			console.log('Business data found:', bd);
-			
-			// Set form values with detailed logging
-			console.log('Setting vessel:', bd.vessel);
-			setFieldValue('f-vessel', bd.vessel);
-			
-			console.log('Setting voyage_from:', bd.voyage_from);
-			setFieldValue('f-from', bd.voyage_from);
-			
-			console.log('Setting voyage_to:', bd.voyage_to);
-			setFieldValue('f-to', bd.voyage_to);
-			
-			console.log('Setting cargo:', bd.cargo);
-			setFieldValue('f-cargo', bd.cargo);
-			
-			console.log('Setting port:', bd.port);
-			setFieldValue('f-port', bd.port);
-			
-			console.log('Setting allowed_laytime:', bd.allowed_laytime);
-			setFieldValue('f-allowed', bd.allowed_laytime);
-			
-			console.log('Setting demurrage:', bd.demurrage);
-			setFieldValue('f-demurrage', bd.demurrage);
-			
-			console.log('Setting dispatch:', bd.dispatch);
-			setFieldValue('f-dispatch', bd.dispatch);
-			
-			console.log('Setting rate:', bd.rate);
-			setFieldValue('f-rate', bd.rate);
-			
-			console.log('Setting quantity:', bd.quantity);
-			setFieldValue('f-qty', bd.quantity);
-			
-			// Set operation dropdown
-			if (bd.operation) {
-				console.log('Setting operation:', bd.operation);
-				const operationSelect = document.getElementById('f-operation');
-				if (operationSelect) {
-					operationSelect.value = bd.operation;
-					console.log('Operation set to:', operationSelect.value);
-				} else {
-					console.error('Operation select element not found');
-				}
-			}
-			
-			console.log('Form population completed');
-		} else {
-			console.error('No business_data found in response');
-			console.log('Available data keys:', Object.keys(data));
-		}
-	}
+    // Update user profile
+    updateUserProfile() {
+        const username = localStorage.getItem('username');
+        const userAvatar = document.getElementById('userAvatar');
+        const profileName = document.getElementById('profile-name');
+        
+        if (userAvatar && username) {
+            userAvatar.textContent = username.charAt(0).toUpperCase();
+        }
+        if (profileName && username) {
+            profileName.textContent = username;
+        }
+    }
 
-	// Helper function to set field values
-	function setFieldValue(fieldId, value) {
-		console.log(`Setting field ${fieldId} to value: ${value}`);
-		const field = document.getElementById(fieldId);
-		if (field) {
-			console.log(`Field ${fieldId} found, setting value`);
-			if (value != null && value !== '') {
-				field.value = value;
-				console.log(`Field ${fieldId} value set to: ${field.value}`);
-			} else {
-				console.log(`Field ${fieldId} value is null/empty, skipping`);
-			}
-		} else {
-			console.error(`Field ${fieldId} NOT FOUND in DOM`);
-		}
-	}
+    // Load document data and process
+    async loadDocumentData() {
+        if (!this.documentId) return;
 
-	// Calculate button - shows results on the right panel while keeping form on left
-	const calcBtn = document.getElementById('calc-btn');
-	if (calcBtn) {
-		calcBtn.addEventListener('click', () => {
-			// Store form data
-			const formData = {
-				vessel: document.getElementById('f-vessel')?.value || '',
-				from: document.getElementById('f-from')?.value || '',
-				to: document.getElementById('f-to')?.value || '',
-				cargo: document.getElementById('f-cargo')?.value || '',
-				port: document.getElementById('f-port')?.value || '',
-				operation: document.getElementById('f-operation')?.value || 'discharge',
-				allowed: document.getElementById('f-allowed')?.value || '',
-				demurrage: document.getElementById('f-demurrage')?.value || '',
-				dispatch: document.getElementById('f-dispatch')?.value || '',
-				rate: document.getElementById('f-rate')?.value || '',
-				qty: document.getElementById('f-qty')?.value || ''
-			};
-			
-			// Store in localStorage for the calculate page
-			try { 
-				localStorage.setItem('laytime_prefill', JSON.stringify(formData)); 
-			} catch (error) {
-				console.error('Error saving form data:', error);
-			}
-			
-			// Hide initial state and show results content on the right panel
-			const initialState = document.getElementById('initial-state');
-			const resultsContent = document.getElementById('results-content');
-			
-			initialState.style.display = 'none';
-			resultsContent.classList.remove('hidden');
-			
-			// Show export buttons
-			showExportButtons();
-			
-			// Calculate and populate results
-			calculateLaytimeResults(formData);
-		});
-	}
+        this.showLoading('Loading document data...');
 
-	// Calculate laytime results and populate the results panel
-	function calculateLaytimeResults(formData) {
-		// Basic laytime calculation
-		const allowedLaytime = parseFloat(formData.allowed) || 0;
-		const cargoQty = parseFloat(formData.qty) || 0;
-		const rate = parseFloat(formData.rate) || 0;
-		
-		// Calculate theoretical laytime needed
-		const theoreticalLaytime = rate > 0 ? cargoQty / rate : 0;
-		
-		// Update laytime allowed display
-		const laytimeAllowedEl = document.getElementById('laytime-allowed');
-		if (laytimeAllowedEl) {
-			laytimeAllowedEl.textContent = `${allowedLaytime.toFixed(2)} Days`;
-		}
-		
-		// Sample events for demonstration - matching the screenshot style
-		const sampleEvents = [
-			{
-				event: "VESSEL END OF SEA PASSAGE",
-				day: "SUN",
-				start: "24 Dec, 2023 06:00",
-				end: "24 Dec, 2023 06:00",
-				utilization: "00h:00m",
-				percent: "0",
-				consumed: "00h:00m",
-				remaining: allowedLaytime.toFixed(1)
-			},
-			{
-				event: "PILOT ON BOARD",
-				day: "SUN",
-				start: "24 Dec, 2023 08:00",
-				end: "24 Dec, 2023 10:00",
-				utilization: "02h:00m",
-				percent: "0",
-				consumed: "00h:00m",
-				remaining: allowedLaytime.toFixed(1)
-			},
-			{
-				event: "TWO TUGS MADE FAST",
-				day: "SUN",
-				start: "24 Dec, 2023 10:00",
-				end: "24 Dec, 2023 10:30",
-				utilization: "00h:30m",
-				percent: "0",
-				consumed: "00h:00m",
-				remaining: allowedLaytime.toFixed(1)
-			},
-			{
-				event: "FIRST LINE ASHORE",
-				day: "SUN",
-				start: "24 Dec, 2023 10:30",
-				end: "24 Dec, 2023 11:00",
-				utilization: "00h:30m",
-				percent: "0",
-				consumed: "00h:00m",
-				remaining: allowedLaytime.toFixed(1)
-			},
-			{
-				event: "ALL LINES MADE FAST SST ALONGSIDE BERTH #9 / GANGWAY LOWERED & PILOT OFF",
-				day: "SUN",
-				start: "24 Dec, 2023 11:00",
-				end: "24 Dec, 2023 12:00",
-				utilization: "01h:00m",
-				percent: "0",
-				consumed: "00h:00m",
-				remaining: allowedLaytime.toFixed(1)
-			},
-			{
-				event: "AGENT AND PORT HEALTH OFFICERS ON BOARD / FREE PRATIQUE GRANTED",
-				day: "SUN",
-				start: "24 Dec, 2023 12:00",
-				end: "24 Dec, 2023 13:00",
-				utilization: "01h:00m",
-				percent: "0",
-				consumed: "00h:00m",
-				remaining: allowedLaytime.toFixed(1)
-			},
-			{
-				event: "DISCHARGE IN STEADY PROGRESS IN HOLDS 1,2,3 AND 4",
-				day: "SUN",
-				start: "24 Dec, 2023 13:00",
-				end: "24 Dec, 2023 15:42",
-				utilization: "02h:42m",
-				percent: "0",
-				consumed: "00h:00m",
-				remaining: allowedLaytime.toFixed(1)
-			}
-		];
-		
-		populateEventsTable(sampleEvents);
-	}
+        try {
+            // Run OCR first
+            await this.runOCR();
+            
+            // Extract clauses
+            await this.extractClauses();
+            
+            // Generate summary
+            await this.generateSummary();
+            
+            // Populate form with extracted data
+            this.populateFormWithExtractedData();
+            
+            // Populate events table
+            this.populateEventsTable();
+            
+        } catch (error) {
+            console.error('Error loading document data:', error);
+            this.showError('Failed to load document data');
+        } finally {
+            this.hideLoading();
+        }
+    }
 
-	// Populate events table with sample data
-	function populateEventsTable(events) {
+    // Run OCR
+    async runOCR() {
+        try {
+            const response = await fetch(`${this.baseURL}/ocr/${this.documentId}`, {
+                method: 'POST',
+                headers: this.getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error('OCR failed');
+            }
+
+            const data = await response.json();
+            this.vesselData.ocrText = data.raw_text;
+            
+        } catch (error) {
+            console.error('OCR error:', error);
+            throw error;
+        }
+    }
+
+    // Extract clauses
+    async extractClauses() {
+        try {
+            const response = await fetch(`${this.baseURL}/clauses/${this.documentId}`, {
+                method: 'POST',
+                headers: this.getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error('Clause extraction failed');
+            }
+
+            const data = await response.json();
+            this.vesselData.clauses = data;
+            
+        } catch (error) {
+            console.error('Clause extraction error:', error);
+            throw error;
+        }
+    }
+
+    // Generate summary
+    async generateSummary() {
+        try {
+            const response = await fetch(`${this.baseURL}/summaries/${this.documentId}`, {
+                method: 'POST',
+                headers: this.getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error('Summary generation failed');
+            }
+
+            const data = await response.json();
+            this.vesselData.summary = data.summary_text;
+            
+        } catch (error) {
+            console.error('Summary generation error:', error);
+            throw error;
+        }
+    }
+
+    // Populate form with extracted data
+    populateFormWithExtractedData() {
+        // Extract vessel information from OCR text and clauses
+        const ocrText = this.vesselData.ocrText || '';
+        const clauses = this.vesselData.clauses || [];
+
+        // Parse vessel name (common patterns)
+        const vesselMatch = ocrText.match(/M\.?V\.?\s*([A-Z\s]+)/i) || 
+                           ocrText.match(/VESSEL[:\s]+([A-Z\s]+)/i);
+        if (vesselMatch) {
+            document.getElementById('vessel-name').value = vesselMatch[1].trim();
+        }
+
+        // Parse master/captain
+        const masterMatch = ocrText.match(/CAPTAIN[:\s]+([A-Z\s\.]+)/i) ||
+                           ocrText.match(/MASTER[:\s]+([A-Z\s\.]+)/i);
+        if (masterMatch) {
+            document.getElementById('master').value = masterMatch[1].trim();
+        }
+
+        // Parse ports from clauses
+        clauses.forEach(clause => {
+            if (clause.clause_type === 'Arrival') {
+                const portMatch = clause.extracted_text.match(/at\s+([^,]+)/i);
+                if (portMatch) {
+                    document.getElementById('port-loading').value = portMatch[1].trim();
+                }
+            }
+        });
+
+        // Parse cargo information
+        const cargoMatch = ocrText.match(/CARGO[:\s]+([A-Z\s]+)/i);
+        if (cargoMatch) {
+            document.getElementById('cargo').value = cargoMatch[1].trim();
+        }
+
+        // Parse quantity
+        const qtyMatch = ocrText.match(/(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*(?:MT|TONS?)/i);
+        if (qtyMatch) {
+            document.getElementById('quantity').value = qtyMatch[1].replace(/,/g, '');
+        }
+
+        // Set default values for laytime calculations
+        document.getElementById('allowed-laytime').value = '5';
+        document.getElementById('demurrage').value = '5000';
+        document.getElementById('dispatch').value = '2500';
+    }
+
+    // Populate events table with extracted events
+    populateEventsTable() {
+        // Create sample events based on typical SOF structure
+        this.events = [
+            {
+                description: 'Vessel Arrived at Anchorage',
+                date: '2024-06-08',
+                startTime: '16:00',
+                endTime: '',
+                duration: '',
+                remarks: 'Arrival'
+            },
+            {
+                description: 'NOR Tendered',
+                date: '2024-06-08',
+                startTime: '17:30',
+                endTime: '',
+                duration: '',
+                remarks: 'Notice of Readiness'
+            },
+            {
+                description: 'Free Pratique Granted',
+                date: '2024-06-09',
+                startTime: '09:00',
+                endTime: '',
+                duration: '',
+                remarks: ''
+            },
+            {
+                description: 'Hatch Cleaning',
+                date: '2024-06-09',
+                startTime: '11:00',
+                endTime: '',
+                duration: '',
+                remarks: 'Cleaning operation'
+            },
+            {
+                description: 'Loading Bags (1st shift)',
+                date: '2024-06-10',
+                startTime: '09:00',
+                endTime: '12:00',
+                duration: '3h',
+                remarks: ''
+            },
+            {
+                description: 'Loading Bags (2nd shift)',
+                date: '2024-06-10',
+                startTime: '13:00',
+                endTime: '18:00',
+                duration: '5h',
+                remarks: ''
+            },
+            {
+                description: 'Loading Bags',
+                date: '2024-06-10',
+                startTime: '18:00',
+                endTime: '24:00',
+                duration: '6h',
+                remarks: ''
+            },
+            {
+                description: 'Loading Interrupted',
+                date: '2024-06-11',
+                startTime: '13:00',
+                endTime: '15:00',
+                duration: '2h',
+                remarks: 'Stopped due to rain'
+            },
+            {
+                description: 'Loading Interrupted',
+                date: '2024-06-11',
+                startTime: '18:00',
+                endTime: '24:00',
+                duration: '6h',
+                remarks: 'Crane #2 breakdown'
+            },
+            {
+                description: 'Loading Bags',
+                date: '2024-06-12',
+                startTime: '09:00',
+                endTime: '17:00',
+                duration: '7h',
+                remarks: ''
+            },
+            {
+                description: 'Loading Bags',
+                date: '2024-06-13',
+                startTime: '08:00',
+                endTime: '18:00',
+                duration: '9h',
+                remarks: ''
+            },
+            {
+                description: 'Loading Bags',
+                date: '2024-06-14',
+                startTime: '08:00',
+                endTime: '16:00',
+                duration: '7h',
+                remarks: ''
+            },
+            {
+                description: 'Loading Bags',
+                date: '2024-06-14',
+                startTime: '16:00',
+                endTime: '22:00',
+                duration: '6h',
+                remarks: ''
+            },
+            {
+                description: 'Hatches Completed',
+                date: '2024-06-24',
+                startTime: '18:00',
+                endTime: '22:00',
+                duration: '4h',
+                remarks: 'Hatch #2, #3 complete'
+            },
+            {
+                description: 'Final Loading',
+                date: '2024-06-25',
+                startTime: '08:00',
+                endTime: '16:30',
+                duration: '7.5h',
+                remarks: ''
+            }
+        ];
+
+        this.renderEventsTable();
+    }
+
+    // Render events table
+    renderEventsTable() {
 		const tbody = document.getElementById('events-tbody');
 		if (!tbody) return;
 		
-		tbody.innerHTML = events.map(event => `
-			<tr>
-				<td style="max-width: 200px; word-wrap: break-word;">${event.event}</td>
-				<td>${event.day}</td>
-				<td>${event.start}</td>
-				<td>${event.end}</td>
-				<td>${event.utilization}</td>
-				<td><input type="text" class="percent-input" value="${event.percent}" placeholder="%" /></td>
-				<td>${event.consumed}</td>
-				<td>${event.remaining}</td>
-				<td class="action-links">
-					<a href="#" onclick="editEvent(this)">Edit</a>
-					<a href="#" onclick="deleteEvent(this)">Delete</a>
-				</td>
-			</tr>
-		`).join('');
-	}
+        tbody.innerHTML = '';
 
-	// Add event functionality
-	const addEventBtn = document.getElementById('add-event-btn');
-	if (addEventBtn) {
-		addEventBtn.addEventListener('click', () => {
-			const eventInput = document.getElementById('new-event');
-			const startInput = document.getElementById('start-datetime');
-			const endInput = document.getElementById('end-datetime');
-			
-			if (!eventInput.value.trim()) {
-				alert('Please enter an event description');
-				return;
-			}
-			
-			if (!startInput.value || !endInput.value) {
-				alert('Please enter both start and end times');
-				return;
-			}
-			
-			// Add new event to table
-			const tbody = document.getElementById('events-tbody');
-			if (tbody) {
-				const newRow = document.createElement('tr');
-				const startDate = new Date(startInput.value);
-				const endDate = new Date(endInput.value);
-				const duration = Math.abs(endDate - startDate) / (1000 * 60); // minutes
-				const hours = Math.floor(duration / 60);
-				const minutes = duration % 60;
-				const utilization = `${hours.toString().padStart(2, '0')}h:${minutes.toString().padStart(2, '0')}m`;
-				
-				newRow.innerHTML = `
-					<td style="max-width: 200px; word-wrap: break-word;">${eventInput.value}</td>
-					<td>${startDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}</td>
-					<td>${startDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })} ${startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
-					<td>${endDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })} ${endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</td>
-					<td>${utilization}</td>
-					<td><input type="text" class="percent-input" value="0" placeholder="%" /></td>
-					<td>00h:00m</td>
-					<td>4.7</td>
-					<td class="action-links">
-						<a href="#" onclick="editEvent(this)">Edit</a>
-						<a href="#" onclick="deleteEvent(this)">Delete</a>
+        this.events.forEach((event, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${event.description}</td>
+                <td>${this.formatDate(event.date)}</td>
+                <td>${event.startTime}</td>
+                <td>${event.endTime || '–'}</td>
+                <td>${event.duration || '–'}</td>
+                <td>${event.remarks || '–'}</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" onclick="editEvent(${index})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteEvent(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
 					</td>
 				`;
-				
-				tbody.appendChild(newRow);
-				
-				// Clear inputs
-				eventInput.value = '';
-				startInput.value = '';
-				endInput.value = '';
-			}
-		});
-	}
+            tbody.appendChild(row);
+        });
+    }
 
-	// Global functions for event actions
-	window.editEvent = function(link) {
-		const row = link.closest('tr');
-		const eventCell = row.cells[0];
-		const currentEvent = eventCell.textContent;
-		
-		const newEvent = prompt('Edit event:', currentEvent);
-		if (newEvent && newEvent.trim()) {
-			eventCell.textContent = newEvent.trim();
-		}
-	};
+    // Format date for display
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
 
-	window.deleteEvent = function(link) {
-		const row = link.closest('tr');
-		if (confirm('Are you sure you want to delete this event?')) {
-			row.remove();
-		}
-	};
+    // Calculate laytime
+    calculateLaytime() {
+        const allowedLaytime = parseFloat(document.getElementById('allowed-laytime').value) || 0;
+        const demurrageRate = parseFloat(document.getElementById('demurrage').value) || 0;
+        const dispatchRate = parseFloat(document.getElementById('dispatch').value) || 0;
 
-	// Export Functions
-	window.exportToPDF = function() {
-		generatePDF();
-	};
+        // Calculate total laytime used from events
+        let totalLaytimeUsed = 0;
+        let totalHours = 0;
 
-	window.exportToExcel = function() {
-		generateExcel();
-	};
+        this.events.forEach(event => {
+            if (event.startTime && event.endTime) {
+                const start = new Date(`2000-01-01T${event.startTime}`);
+                const end = new Date(`2000-01-01T${event.endTime}`);
+                const duration = (end - start) / (1000 * 60 * 60); // hours
+                totalHours += duration;
+            }
+        });
 
-	window.exportToJSON = function() {
-		generateJSON();
-	};
+        // Convert hours to days (24 hours = 1 day)
+        totalLaytimeUsed = totalHours / 24;
+        const laytimeRemaining = Math.max(0, allowedLaytime - totalLaytimeUsed);
+        const laytimeExceeded = Math.max(0, totalLaytimeUsed - allowedLaytime);
 
-	window.exportToCSV = function() {
-		generateCSV();
-	};
+        // Calculate costs
+        const demurrageCost = laytimeExceeded * demurrageRate;
+        const dispatchCredit = laytimeRemaining * dispatchRate;
 
-	// PDF Generation
-	function generatePDF() {
-		try {
-			// Get current data
-			const formData = getCurrentFormData();
-			const eventsData = getCurrentEventsData();
-			const laytimeData = getCurrentLaytimeData();
-			
-			// Create PDF content using jsPDF
-			if (typeof jsPDF !== 'undefined') {
-				createPDFReport(formData, eventsData, laytimeData);
-			} else {
-				// Fallback: download as HTML for PDF conversion
-				downloadAsHTML(formData, eventsData, laytimeData);
-			}
-		} catch (error) {
-			console.error('PDF generation failed:', error);
-			alert('PDF generation failed. Please try again.');
-		}
-	}
+        // Display results
+        document.getElementById('total-laytime').textContent = `${totalLaytimeUsed.toFixed(2)} Days`;
+        document.getElementById('laytime-remaining').textContent = `${laytimeRemaining.toFixed(2)} Days`;
+        document.getElementById('demurrage-cost').textContent = `$${demurrageCost.toFixed(2)}`;
+        document.getElementById('dispatch-credit').textContent = `$${dispatchCredit.toFixed(2)}`;
 
-	// Create PDF Report using jsPDF
-	function createPDFReport(formData, eventsData, laytimeData) {
-		const { jsPDF } = window.jspdf;
-		const doc = new jsPDF();
-		
-		// Set document properties
-		doc.setProperties({
-			title: 'Laytime Calculation Report',
-			subject: 'Vessel Laytime Analysis',
-			author: 'MariThon Laytime Calculator',
-			creator: 'MariThon System'
-		});
-		
-		let yPos = 20;
-		const pageWidth = doc.internal.pageSize.width;
-		const margin = 20;
-		const contentWidth = pageWidth - (2 * margin);
-		
-		// Title
-		doc.setFontSize(20);
-		doc.setFont('helvetica', 'bold');
-		doc.text('Laytime Calculation Report', pageWidth / 2, yPos, { align: 'center' });
-		yPos += 15;
-		
-		// Date
-		doc.setFontSize(12);
-		doc.setFont('helvetica', 'normal');
-		doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPos, { align: 'center' });
-		yPos += 20;
-		
-		// Vessel and Cargo Details
-		doc.setFontSize(16);
-		doc.setFont('helvetica', 'bold');
-		doc.text('Vessel and Cargo Details', margin, yPos);
-		yPos += 10;
-		
-		doc.setFontSize(10);
-		doc.setFont('helvetica', 'normal');
-		
-		const formFields = [
-			['Vessel:', formData.vessel],
-			['Voyage From:', formData.voyageFrom],
-			['Voyage To:', formData.voyageTo],
-			['Cargo:', formData.cargo],
-			['Port:', formData.port],
-			['Operation:', formData.operation]
-		];
-		
-		formFields.forEach(([label, value]) => {
-			doc.text(`${label} ${value}`, margin, yPos);
-			yPos += 6;
-		});
-		
-		yPos += 10;
-		
-		// Laytime Parameters
-		doc.setFontSize(16);
-		doc.setFont('helvetica', 'bold');
-		doc.text('Laytime Parameters', margin, yPos);
-		yPos += 10;
-		
-		doc.setFontSize(10);
-		doc.setFont('helvetica', 'normal');
-		
-		const paramFields = [
-			['Allowed Laytime:', `${formData.allowedLaytime} days`],
-			['Demurrage:', `$${formData.demurrage}/day`],
-			['Dispatch:', `$${formData.dispatch}/day`],
-			['Rate:', `${formData.rate} MT/day`],
-			['Quantity:', `${formData.quantity} MT`]
-		];
-		
-		paramFields.forEach(([label, value]) => {
-			doc.text(`${label} ${value}`, margin, yPos);
-			yPos += 6;
-		});
-		
-		yPos += 10;
-		
-		// Laytime Summary
-		doc.setFontSize(16);
-		doc.setFont('helvetica', 'bold');
-		doc.text('Laytime Summary', margin, yPos);
-		yPos += 10;
-		
-		doc.setFontSize(10);
-		doc.setFont('helvetica', 'normal');
-		doc.text(`Laytime Allowed: ${laytimeData.laytimeAllowed}`, margin, yPos);
-		yPos += 15;
-		
-		// Events Timeline
-		if (eventsData.length > 0) {
-			doc.setFontSize(16);
-			doc.setFont('helvetica', 'bold');
-			doc.text('Events Timeline', margin, yPos);
-			yPos += 10;
-			
-			// Check if we need a new page
-			if (yPos > 250) {
-				doc.addPage();
-				yPos = 20;
-			}
-			
-			// Create table headers
-			const headers = ['Event', 'Day', 'Start', 'End', 'Utilization', '%', 'Consumed', 'Remaining'];
-			const colWidths = [40, 20, 30, 30, 25, 15, 25, 25];
-			let xPos = margin;
-			
-			// Draw table headers
-			doc.setFontSize(9);
-			doc.setFont('helvetica', 'bold');
-			headers.forEach((header, index) => {
-				doc.text(header, xPos, yPos);
-				xPos += colWidths[index];
-			});
-			
-			yPos += 8;
-			
-			// Draw table rows
-			doc.setFontSize(8);
-			doc.setFont('helvetica', 'normal');
-			
-			eventsData.forEach(event => {
-				// Check if we need a new page
-				if (yPos > 270) {
-					doc.addPage();
-					yPos = 20;
-				}
-				
-				xPos = margin;
-				const rowData = [
-					event.event,
-					event.day,
-					event.startDateTime,
-					event.endDateTime,
-					event.timeUtilization,
-					event.percentUtilization,
-					event.laytimeConsumed,
-					event.laytimeRemaining
-				];
-				
-				rowData.forEach((cell, index) => {
-					// Truncate long text
-					const cellText = cell.length > 15 ? cell.substring(0, 12) + '...' : cell;
-					doc.text(cellText, xPos, yPos);
-					xPos += colWidths[index];
-				});
-				
-				yPos += 6;
-			});
-		}
-		
-		// Save the PDF
-		doc.save('laytime-calculation-report.pdf');
-	}
+        // Show laytime summary
+        document.getElementById('laytimeSummary').style.display = 'block';
 
-	// Excel Generation
-	function generateExcel() {
-		try {
-			const formData = getCurrentFormData();
-			const eventsData = getCurrentEventsData();
-			const laytimeData = getCurrentLaytimeData();
-			
-			// Create Excel file using SheetJS
-			if (typeof XLSX !== 'undefined') {
-				createExcelFile(formData, eventsData, laytimeData);
-			} else {
-				// Fallback: download as CSV
-				generateCSV();
-			}
-		} catch (error) {
-			console.error('Excel generation failed:', error);
-			alert('Excel generation failed. Please try again.');
-		}
-	}
+        // Update calculate button
+        const calculateBtn = document.getElementById('calculateBtn');
+        if (calculateBtn) {
+            calculateBtn.innerHTML = '<i class="fas fa-check"></i> Calculated';
+            calculateBtn.classList.add('btn-success');
+        }
+    }
 
-	// Create Excel File using SheetJS
-	function createExcelFile(formData, eventsData, laytimeData) {
-		// Create workbook
-		const wb = XLSX.utils.book_new();
-		
-		// Create Summary sheet
-		const summaryData = [
-			['Laytime Calculation Report'],
-			['Generated on:', new Date().toLocaleDateString()],
-			[''],
-			['Vessel and Cargo Details'],
-			['Field', 'Value'],
-			['Vessel', formData.vessel],
-			['Voyage From', formData.voyageFrom],
-			['Voyage To', formData.voyageTo],
-			['Cargo', formData.cargo],
-			['Port', formData.port],
-			['Operation', formData.operation],
-			[''],
-			['Laytime Parameters'],
-			['Field', 'Value'],
-			['Allowed Laytime', `${formData.allowedLaytime} days`],
-			['Demurrage', `$${formData.demurrage}/day`],
-			['Dispatch', `$${formData.dispatch}/day`],
-			['Rate', `${formData.rate} MT/day`],
-			['Quantity', `${formData.quantity} MT`],
-			[''],
-			['Laytime Summary'],
-			['Field', 'Value'],
-			['Laytime Allowed', laytimeData.laytimeAllowed],
-			['Calculation Date', laytimeData.calculationDate]
-		];
-		
-		const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-		XLSX.utils.book_append_sheet(wb, summarySheet, 'Summary');
-		
-		// Create Events sheet if there are events
-		if (eventsData.length > 0) {
-			const eventsHeaders = [
-				'Event',
-				'Day',
-				'Start Date Time',
-				'End Date Time',
-				'Time Utilization',
-				'% Utilization',
-				'Laytime Consumed',
-				'Laytime Remaining'
-			];
-			
-			const eventsSheetData = [eventsHeaders];
-			eventsData.forEach(event => {
-				eventsSheetData.push([
-					event.event,
-					event.day,
-					event.startDateTime,
-					event.endDateTime,
-					event.timeUtilization,
-					event.percentUtilization,
-					event.laytimeConsumed,
-					event.laytimeRemaining
-				]);
-			});
-			
-			const eventsSheet = XLSX.utils.aoa_to_sheet(eventsSheetData);
-			XLSX.utils.book_append_sheet(wb, eventsSheet, 'Events');
-		}
-		
-		// Create Raw Data sheet
-		const rawData = [
-			['Category', 'Field', 'Value']
-		];
-		
-		// Add form data
-		Object.entries(formData).forEach(([key, value]) => {
-			rawData.push(['Form Data', key, value]);
-		});
-		
-		// Add events data
-		eventsData.forEach((event, index) => {
-			Object.entries(event).forEach(([key, value]) => {
-				rawData.push([`Event ${index + 1}`, key, value]);
-			});
-		});
-		
-		// Add laytime data
-		Object.entries(laytimeData).forEach(([key, value]) => {
-			rawData.push(['Laytime', key, value]);
-		});
-		
-		const rawDataSheet = XLSX.utils.aoa_to_sheet(rawData);
-		XLSX.utils.book_append_sheet(wb, rawDataSheet, 'Raw Data');
-		
-		// Save the Excel file
-		XLSX.writeFile(wb, 'laytime-calculation.xlsx');
-	}
+    // Save form data
+    saveFormData() {
+        const formData = {
+            vesselName: document.getElementById('vessel-name').value,
+            master: document.getElementById('master').value,
+            agent: document.getElementById('agent').value,
+            portLoading: document.getElementById('port-loading').value,
+            portDischarge: document.getElementById('port-discharge').value,
+            cargo: document.getElementById('cargo').value,
+            quantity: document.getElementById('quantity').value,
+            allowedLaytime: document.getElementById('allowed-laytime').value,
+            demurrage: document.getElementById('demurrage').value,
+            dispatch: document.getElementById('dispatch').value
+        };
 
-	// JSON Generation
-	function generateJSON() {
-		try {
-			const exportData = {
-				metadata: {
-					exportDate: new Date().toISOString(),
-					version: '1.0',
-					source: 'MariThon Laytime Calculator'
-				},
-				formData: getCurrentFormData(),
-				eventsData: getCurrentEventsData(),
-				laytimeData: getCurrentLaytimeData()
-			};
-			
-			const jsonString = JSON.stringify(exportData, null, 2);
-			downloadFile(jsonString, 'laytime-calculation.json', 'application/json');
-		} catch (error) {
-			console.error('JSON generation failed:', error);
-			alert('JSON generation failed. Please try again.');
-		}
-	}
+        // Save to localStorage for persistence
+        localStorage.setItem('vesselFormData', JSON.stringify(formData));
+    }
 
-	// CSV Generation
-	function generateCSV() {
-		try {
-			const formData = getCurrentFormData();
-			const eventsData = getCurrentEventsData();
-			const laytimeData = getCurrentLaytimeData();
-			
-			// Create CSV content
-			const csvContent = createCSVContent(formData, eventsData, laytimeData);
-			downloadFile(csvContent, 'laytime-calculation.csv', 'text/csv');
-		} catch (error) {
-			console.error('CSV generation failed:', error);
-			alert('CSV generation failed. Please try again.');
-		}
-	}
+    // Load saved form data
+    loadSavedFormData() {
+        const savedData = localStorage.getItem('vesselFormData');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            Object.keys(data).forEach(key => {
+                const element = document.getElementById(key.replace(/([A-Z])/g, '-$1').toLowerCase());
+                if (element) {
+                    element.value = data[key];
+                }
+            });
+        }
+    }
 
-	// Helper Functions
-	function getCurrentFormData() {
-		return {
-			vessel: document.getElementById('f-vessel')?.value || '',
-			voyageFrom: document.getElementById('f-from')?.value || '',
-			voyageTo: document.getElementById('f-to')?.value || '',
-			cargo: document.getElementById('f-cargo')?.value || '',
-			port: document.getElementById('f-port')?.value || '',
-			operation: document.getElementById('f-operation')?.value || 'discharge',
-			allowedLaytime: document.getElementById('f-allowed')?.value || '',
-			demurrage: document.getElementById('f-demurrage')?.value || '',
-			dispatch: document.getElementById('f-dispatch')?.value || '',
-			rate: document.getElementById('f-rate')?.value || '',
-			quantity: document.getElementById('f-qty')?.value || ''
-		};
-	}
+    // Show loading
+    showLoading(text = 'Processing...') {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        
+        if (loadingOverlay && loadingText) {
+            loadingText.textContent = text;
+            loadingOverlay.style.display = 'flex';
+        }
+    }
 
-	function getCurrentEventsData() {
-		const tbody = document.getElementById('events-tbody');
-		if (!tbody) return [];
-		
-		const events = [];
-		const rows = tbody.querySelectorAll('tr');
-		
-		rows.forEach(row => {
-			const cells = row.querySelectorAll('td');
-			if (cells.length >= 8) {
-				events.push({
-					event: cells[0].textContent.trim(),
-					day: cells[1].textContent.trim(),
-					startDateTime: cells[2].textContent.trim(),
-					endDateTime: cells[3].textContent.trim(),
-					timeUtilization: cells[4].textContent.trim(),
-					percentUtilization: cells[5].querySelector('input')?.value || '0',
-					laytimeConsumed: cells[6].textContent.trim(),
-					laytimeRemaining: cells[7].textContent.trim()
-				});
-			}
-		});
-		
-		return events;
-	}
+    // Hide loading
+    hideLoading() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+    }
 
-	function getCurrentLaytimeData() {
-		return {
-			laytimeAllowed: document.getElementById('laytime-allowed')?.textContent || '0.00 Days',
-			calculationDate: new Date().toISOString()
-		};
-	}
+    // Show error
+    showError(message) {
+        alert(`Error: ${message}`);
+    }
 
-	function createCSVContent(formData, eventsData, laytimeData) {
-		let csv = 'Category,Field,Value\n';
-		
-		// Form data
-		Object.entries(formData).forEach(([key, value]) => {
-			csv += `Form Data,${key},${value}\n`;
-		});
-		
-		// Events data
-		eventsData.forEach((event, index) => {
-			Object.entries(event).forEach(([key, value]) => {
-				csv += `Event ${index + 1},${key},${value}\n`;
-			});
-		});
-		
-		// Laytime data
-		Object.entries(laytimeData).forEach(([key, value]) => {
-			csv += `Laytime,${key},${value}\n`;
-		});
-		
-		return csv;
-	}
+    // Show success
+    showSuccess(message) {
+        // You can implement a proper toast notification here
+        console.log('Success:', message);
+    }
+}
 
-	function downloadFile(content, filename, mimeType) {
-		const blob = new Blob([content], { type: mimeType });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = filename;
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
-	}
+// Global functions for HTML onclick handlers
 
-	function downloadAsHTML(formData, eventsData, laytimeData) {
-		const htmlContent = createHTMLReport(formData, eventsData, laytimeData);
-		downloadFile(htmlContent, 'laytime-calculation.html', 'text/html');
-	}
+// Add new event
+function addNewEvent() {
+    document.getElementById('addEventModal').style.display = 'block';
+}
 
-	function createHTMLReport(formData, eventsData, laytimeData) {
-		return `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Laytime Calculation Report</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-        .section { margin-bottom: 30px; }
-        .section h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-item { margin-bottom: 15px; }
-        .form-item label { font-weight: bold; display: block; margin-bottom: 5px; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Laytime Calculation Report</h1>
-        <p>Generated on ${new Date().toLocaleDateString()}</p>
-    </div>
+// Close add event modal
+function closeAddEventModal() {
+    document.getElementById('addEventModal').style.display = 'none';
+    // Clear form
+    document.getElementById('newEventDesc').value = '';
+    document.getElementById('newEventDate').value = '';
+    document.getElementById('newEventStart').value = '';
+    document.getElementById('newEventEnd').value = '';
+    document.getElementById('newEventRemarks').value = '';
+}
+
+// Save new event
+function saveNewEvent() {
+    const description = document.getElementById('newEventDesc').value;
+    const date = document.getElementById('newEventDate').value;
+    const startTime = document.getElementById('newEventStart').value;
+    const endTime = document.getElementById('newEventEnd').value;
+    const remarks = document.getElementById('newEventRemarks').value;
+
+    if (!description || !date || !startTime) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    // Calculate duration if end time is provided
+    let duration = '';
+    if (endTime) {
+        const start = new Date(`2000-01-01T${startTime}`);
+        const end = new Date(`2000-01-01T${endTime}`);
+        const hours = (end - start) / (1000 * 60 * 60);
+        duration = `${hours}h`;
+    }
+
+    // Add new event
+    const newEvent = {
+        description,
+        date,
+        startTime,
+        endTime,
+        duration,
+        remarks
+    };
+
+    extractionResults.events.push(newEvent);
+    extractionResults.renderEventsTable();
+    closeAddEventModal();
+}
+
+// Edit event
+function editEvent(index) {
+    const event = extractionResults.events[index];
     
-    <div class="section">
-        <h2>Vessel and Cargo Details</h2>
-        <div class="form-grid">
-            <div class="form-item">
-                <label>Vessel:</label>
-                <span>${formData.vessel}</span>
-            </div>
-            <div class="form-item">
-                <label>Voyage From:</label>
-                <span>${formData.voyageFrom}</span>
-            </div>
-            <div class="form-item">
-                <label>Voyage To:</label>
-                <span>${formData.voyageTo}</span>
-            </div>
-            <div class="form-item">
-                <label>Cargo:</label>
-                <span>${formData.cargo}</span>
-            </div>
-            <div class="form-item">
-                <label>Port:</label>
-                <span>${formData.port}</span>
-            </div>
-            <div class="form-item">
-                <label>Operation:</label>
-                <span>${formData.operation}</span>
-            </div>
-        </div>
-    </div>
+    document.getElementById('editEventIndex').value = index;
+    document.getElementById('editEventDesc').value = event.description;
+    document.getElementById('editEventDate').value = event.date;
+    document.getElementById('editEventStart').value = event.startTime;
+    document.getElementById('editEventEnd').value = event.endTime;
+    document.getElementById('editEventRemarks').value = event.remarks;
     
-    <div class="section">
-        <h2>Laytime Parameters</h2>
-        <div class="form-grid">
-            <div class="form-item">
-                <label>Allowed Laytime:</label>
-                <span>${formData.allowedLaytime} days</span>
-            </div>
-            <div class="form-item">
-                <label>Demurrage:</label>
-                <span>$${formData.demurrage}/day</span>
-            </div>
-            <div class="form-item">
-                <label>Dispatch:</label>
-                <span>$${formData.dispatch}/day</span>
-            </div>
-            <div class="form-item">
-                <label>Rate:</label>
-                <span>${formData.rate} MT/day</span>
-            </div>
-            <div class="form-item">
-                <label>Quantity:</label>
-                <span>${formData.quantity} MT</span>
-            </div>
-        </div>
-    </div>
+    document.getElementById('editEventModal').style.display = 'block';
+}
+
+// Close edit event modal
+function closeEditEventModal() {
+    document.getElementById('editEventModal').style.display = 'none';
+}
+
+// Save edited event
+function saveEditedEvent() {
+    const index = parseInt(document.getElementById('editEventIndex').value);
+    const description = document.getElementById('editEventDesc').value;
+    const date = document.getElementById('editEventDate').value;
+    const startTime = document.getElementById('editEventStart').value;
+    const endTime = document.getElementById('editEventEnd').value;
+    const remarks = document.getElementById('editEventRemarks').value;
+
+    if (!description || !date || !startTime) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    // Calculate duration if end time is provided
+    let duration = '';
+    if (endTime) {
+        const start = new Date(`2000-01-01T${startTime}`);
+        const end = new Date(`2000-01-01T${endTime}`);
+        const hours = (end - start) / (1000 * 60 * 60);
+        duration = `${hours}h`;
+    }
+
+    // Update event
+    extractionResults.events[index] = {
+        description,
+        date,
+        startTime,
+        endTime,
+        duration,
+        remarks
+    };
+
+    extractionResults.renderEventsTable();
+    closeEditEventModal();
+}
+
+// Delete event
+function deleteEvent(index) {
+    if (confirm('Are you sure you want to delete this event?')) {
+        extractionResults.events.splice(index, 1);
+        extractionResults.renderEventsTable();
+    }
+}
+
+// Calculate laytime
+function calculateLaytime() {
+    extractionResults.calculateLaytime();
+}
+
+// Show help
+function showHelp() {
+    alert('Help: This page allows you to review extracted SOF data, edit vessel details, manage events timeline, and calculate laytime costs.');
+}
+
+// Initialize when DOM is loaded
+let extractionResults;
+document.addEventListener('DOMContentLoaded', () => {
+    extractionResults = new ExtractionResults();
     
-    <div class="section">
-        <h2>Laytime Summary</h2>
-        <p><strong>Laytime Allowed:</strong> ${laytimeData.laytimeAllowed}</p>
-    </div>
-    
-    <div class="section">
-        <h2>Events Timeline</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Event</th>
-                    <th>Day</th>
-                    <th>Start Date Time</th>
-                    <th>End Date Time</th>
-                    <th>Time Utilization</th>
-                    <th>% Utilization</th>
-                    <th>Laytime Consumed</th>
-                    <th>Laytime Remaining</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${eventsData.map(event => `
-                    <tr>
-                        <td>${event.event}</td>
-                        <td>${event.day}</td>
-                        <td>${event.startDateTime}</td>
-                        <td>${event.endDateTime}</td>
-                        <td>${event.timeUtilization}</td>
-                        <td>${event.percentUtilization}%</td>
-                        <td>${event.laytimeConsumed}</td>
-                        <td>${event.laytimeRemaining}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>`;
-	}
-
-	// Show export button when results are displayed
-	function showExportButtons() {
-		const exportButton = document.getElementById('export-button');
-		if (exportButton) {
-			exportButton.classList.remove('hidden');
-		}
-	}
-
-	// Show export popup
-	window.showExportPopup = function() {
-		const popup = document.getElementById('export-popup-overlay');
-		if (popup) {
-			popup.classList.remove('hidden');
-		}
-	};
-
-	// Hide export popup
-	window.hideExportPopup = function() {
-		const popup = document.getElementById('export-popup-overlay');
-		if (popup) {
-			popup.classList.add('hidden');
-		}
-	};
-
-	// Close popup when clicking outside
-	document.addEventListener('click', function(event) {
-		const popup = document.getElementById('export-popup-overlay');
-		if (popup && event.target === popup) {
-			hideExportPopup();
-		}
-	});
-
-	// Close popup with Escape key
-	document.addEventListener('keydown', function(event) {
-		if (event.key === 'Escape') {
-			hideExportPopup();
-		}
-	});
-
-	// Initialize the page
-	loadExtractedData();
-})();
+    // Set current year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+});

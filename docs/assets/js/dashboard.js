@@ -1,538 +1,277 @@
-// Cargo LayTime Dashboard JavaScript
-// Handles file uploads, drag & drop, and user interactions
+// Dashboard JavaScript with FastAPI Integration
+class DashboardAPI {
+    constructor() {
+        this.baseURL = 'http://127.0.0.1:8000';
+        this.currentDocumentId = null;
+        this.currentFile = null;
+        this.init();
+    }
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Cargo LayTime Dashboard loaded successfully');
-    
-    // Initialize the dashboard
-    initializeDashboard();
-});
+    init() {
+        this.checkAuth();
+        this.setupEventListeners();
+        this.updateUserProfile();
+    }
 
-// Test backend connectivity
-async function testBackendConnectivity() {
-    console.log('Testing backend connectivity...');
-    
-    try {
-        const startTime = Date.now();
-        const response = await fetch('http://localhost:8000/docs', { 
-            method: 'GET',
-            mode: 'cors'
+    // Authentication check
+    checkAuth() {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+    }
+
+    // Get auth headers
+    getAuthHeaders() {
+        const token = localStorage.getItem('auth_token');
+        return {
+            'Authorization': `Bearer ${token}`
+        };
+    }
+
+    // Setup event listeners
+    setupEventListeners() {
+        // File input change
+        const fileInput = document.getElementById('sofFileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        }
+
+        // Drag and drop
+        const uploadArea = document.getElementById('sofUploadArea');
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+            uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
+        }
+
+        // User profile dropdown
+        const userProfile = document.getElementById('userProfile');
+        if (userProfile) {
+            userProfile.addEventListener('click', () => this.toggleDropdown());
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#userProfile')) {
+                this.hideDropdown();
+            }
         });
-        const endTime = Date.now();
-        
-        console.log(`Backend response time: ${endTime - startTime}ms`);
-        console.log('Backend status:', response.status);
-        console.log('Backend accessible:', response.ok);
-        
-        if (response.ok) {
-            showError('✅ Backend is accessible and responding quickly');
-        } else {
-            showError('⚠️ Backend responded but with error status');
+    }
+
+    // File handling
+    handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            this.currentFile = file;
+            this.displayFileInfo(file);
         }
+    }
+
+    handleDragOver(event) {
+        event.preventDefault();
+        event.currentTarget.classList.add('drag-over');
+    }
+
+    handleDrop(event) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('drag-over');
         
-    } catch (error) {
-        console.error('Backend connectivity test failed:', error);
-        showError('❌ Backend connectivity test failed: ' + error.message);
-    }
-}
-
-// Test function to verify basic functionality
-function testBasicFunctionality() {
-    console.log('Testing basic dashboard functionality...');
-    
-    // Test if progress elements exist
-    const progressSection = document.getElementById('progressSection');
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
-    
-    console.log('Progress elements found:', {
-        progressSection: !!progressSection,
-        progressFill: !!progressFill,
-        progressText: !!progressText
-    });
-    
-    // Test if submit button exists
-    const submitBtn = document.getElementById('submitBtn');
-    console.log('Submit button found:', !!submitBtn);
-    
-    // Test if file inputs exist
-    const sofInput = document.getElementById('sofFileInput');
-    const cpInput = document.getElementById('cpFileInput');
-    console.log('File inputs found:', {
-        sofInput: !!sofInput,
-        cpInput: !!cpInput
-    });
-}
-
-// Initialize the dashboard
-function initializeDashboard() {
-    console.log('Initializing dashboard...');
-    
-    // Test basic functionality first
-    testBasicFunctionality();
-    
-    // Setup file input listeners
-    setupFileInputs();
-    
-    // Setup drag and drop functionality
-    setupDragAndDrop();
-    
-    // Setup user profile dropdown
-    setupUserProfile();
-    
-    // Add smooth animations
-    addAnimations();
-    
-    console.log('Dashboard initialization complete');
-}
-
-// File Input Setup
-function setupFileInputs() {
-    const sofInput = document.getElementById('sofFileInput');
-    const cpInput = document.getElementById('cpFileInput');
-    
-    sofInput.addEventListener('change', (e) => handleFileSelect(e, 'sof'));
-    cpInput.addEventListener('change', (e) => handleFileSelect(e, 'cp'));
-}
-
-// Handle File Selection
-function handleFileSelect(event, fileType) {
-    const file = event.target.files[0];
-    if (file) {
-        displayFileInfo(file, fileType);
-        updateSubmitButton();
-    }
-}
-
-// Display File Information
-function displayFileInfo(file, fileType) {
-    const fileInfo = document.getElementById(`${fileType}FileInfo`);
-    const fileName = document.getElementById(`${fileType}FileName`);
-    const uploadArea = document.getElementById(`${fileType}UploadArea`);
-    
-    // Update file name
-    fileName.textContent = file.name;
-    
-    // Show file info, hide upload area
-    fileInfo.style.display = 'block';
-    uploadArea.style.display = 'none';
-    
-    // Add success animation
-    fileInfo.style.animation = 'fileSlideIn 0.3s ease';
-}
-
-// Remove File
-function removeFile(fileType) {
-    const fileInfo = document.getElementById(`${fileType}FileInfo`);
-    const uploadArea = document.getElementById(`${fileType}UploadArea`);
-    const fileInput = document.getElementById(`${fileType}FileInput`);
-    
-    // Reset file input
-    fileInput.value = '';
-    
-    // Hide file info, show upload area
-    fileInfo.style.display = 'none';
-    uploadArea.style.display = 'block';
-    
-    // Update submit button
-    updateSubmitButton();
-}
-
-// Drag and Drop Setup
-function setupDragAndDrop() {
-    const uploadAreas = document.querySelectorAll('.upload-area');
-    
-    uploadAreas.forEach(area => {
-        area.addEventListener('dragover', handleDragOver);
-        area.addEventListener('dragleave', handleDragLeave);
-        area.addEventListener('drop', handleDrop);
-        // Removed the click event listener to prevent double file picker opening
-        // The button onclick in HTML will handle file selection
-    });
-}
-
-// Handle Drag Over
-function handleDragOver(e) {
-    e.preventDefault();
-    e.currentTarget.classList.add('dragover');
-}
-
-// Handle Drag Leave
-function handleDragLeave(e) {
-    e.currentTarget.classList.remove('dragover');
-}
-
-// Handle Drop
-function handleDrop(e) {
-    e.preventDefault();
-    const area = e.currentTarget;
-    area.classList.remove('dragover');
-    
-    const files = e.dataTransfer.files;
+        const files = event.dataTransfer.files;
     if (files.length > 0) {
-        const file = files[0];
-        const fileType = area.id.replace('UploadArea', '');
-        
-        // Validate file type
-        if (validateFileType(file)) {
-            // Update the corresponding file input
-            const fileInput = document.getElementById(`${fileType}FileInput`);
-            fileInput.files = files;
-            
-            // Display file info
-            displayFileInfo(file, fileType);
-            updateSubmitButton();
-        } else {
-            showError('Please select a valid PDF or DOCX file.');
+            this.currentFile = files[0];
+            this.displayFileInfo(files[0]);
         }
     }
-}
 
-// Handle Area Click - REMOVED to prevent double file picker opening
-// The button onclick in HTML handles file selection directly
-
-// Validate File Type
-function validateFileType(file) {
-    const validTypes = [
-        'application/pdf',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-    const validExtensions = ['.pdf', '.docx'];
-    
-    return validTypes.includes(file.type) || 
-           validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
-}
-
-// Update Submit Button State
-function updateSubmitButton() {
-    const submitBtn = document.getElementById('submitBtn');
-    const sofFile = document.getElementById('sofFileInput').files[0];
-    
-    if (sofFile) {
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
-        submitBtn.style.cursor = 'pointer';
-    } else {
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.6';
-        submitBtn.style.cursor = 'not-allowed';
+    displayFileInfo(file) {
+        const fileInfo = document.getElementById('sofFileInfo');
+        const fileName = document.getElementById('sofFileName');
+        const uploadArea = document.getElementById('sofUploadArea');
+        
+        if (fileInfo && fileName && uploadArea) {
+            fileName.textContent = file.name;
+            fileInfo.style.display = 'block';
+            uploadArea.style.display = 'none';
+        }
     }
-}
 
-// Submit Files
-async function submitFiles() {
-    const sofFile = document.getElementById('sofFileInput').files[0];
-    const cpFile = document.getElementById('cpFileInput').files[0];
-    
-    if (!sofFile) {
-        showError('Please upload an SOF file to continue. The SOF file is required for laytime calculations.');
+    removeFile() {
+        this.currentFile = null;
+        this.currentDocumentId = null;
+        
+        const fileInfo = document.getElementById('sofFileInfo');
+        const uploadArea = document.getElementById('sofUploadArea');
+        const fileInput = document.getElementById('sofFileInput');
+        
+        if (fileInfo && uploadArea && fileInput) {
+            fileInfo.style.display = 'none';
+            uploadArea.style.display = 'block';
+            fileInput.value = '';
+        }
+        
+        // Hide processing sections
+        // this.hideProcessingSections(); // Removed as per edit hint
+        
+        // Reset results
+        // this.resetResults(); // Removed as per edit hint
+    }
+
+    // Document upload
+    async uploadDocument() {
+        if (!this.currentFile) {
+            this.showMessage('Please select a file first', 'error');
         return;
     }
     
-    // Clear any old extraction data first
-    localStorage.removeItem('extraction_results');
-    localStorage.removeItem('laytime_extraction_data');
-    localStorage.removeItem('uploaded_file_name');
-    
-    // Show progress section
-    const progressSection = document.getElementById('progressSection');
-    const progressText = document.getElementById('progressText');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    progressSection.style.display = 'block';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Processing...';
-    
-    try {
-        console.log('Starting file upload and extraction process...');
-        console.log('Uploading file:', sofFile.name, 'size:', sofFile.size, 'bytes');
+        this.showLoading('Uploading document...');
         
-        updateProgress(20, 'Uploading SOF file...');
-        
-        // Create FormData for file upload
+        try {
         const formData = new FormData();
-        formData.append('file', sofFile);
+            formData.append('file', this.currentFile);
         
-        // Single API call - backend is working fine
-        console.log('Extracting document...');
-        const response = await fetch('http://localhost:8000/extract?debug=true', {
+            const response = await fetch(`${this.baseURL}/documents/upload`, {
             method: 'POST',
+                headers: this.getAuthHeaders(),
             body: formData
         });
         
-        console.log('Response status:', response.status, response.statusText);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response body:', errorText);
-            throw new Error(`Server error ${response.status}: ${errorText}`);
-        }
-        
-        updateProgress(80, 'Processing document...');
-        
+            if (response.ok) {
         const data = await response.json();
-        console.log('Parsed data:', data);
-        
-        updateProgress(90, 'Storing results...');
-        
-        // Store extraction data in localStorage
-        try {
-            localStorage.setItem('extraction_results', JSON.stringify(data));
-            localStorage.setItem('uploaded_file_name', sofFile.name);
+                this.currentDocumentId = data.id;
+                
+                this.showMessage('Document uploaded successfully!', 'success');
+                
+                // Redirect to extraction results page with document ID
+                setTimeout(() => {
+                    window.location.href = `extraction-results.html?doc_id=${this.currentDocumentId}`;
+                }, 1500);
+            } else {
+                const error = await response.json();
+                throw new Error(error.detail || 'Upload failed');
+            }
         } catch (error) {
-            console.error('Error storing extraction data:', error);
+            console.error('Upload error:', error);
+            this.showMessage(`Upload failed: ${error.message}`, 'error');
+        } finally {
+            this.hideLoading();
         }
-        
-        updateProgress(100, 'Extraction complete!');
-        
-        // Show success message
-        progressText.textContent = `✅ ${sofFile.name} processed successfully!`;
-        progressText.style.color = '#4CAF50';
-        
-        // Wait a moment to show completion, then redirect
-        setTimeout(() => {
-            console.log('Redirecting to extraction results page...');
-            window.location.href = 'extraction-results.html';
-        }, 2000);
-        
-    } catch (error) {
-        console.error('File upload/extraction error:', error);
-        
-        let errorMessage = 'Parsing failed. ';
-        if (error.message.includes('Failed to fetch')) {
-            errorMessage += 'Cannot connect to the backend server. Please ensure the backend is running on http://localhost:8000';
-        } else if (error.message.includes('Server error')) {
-            errorMessage += 'Server error occurred. Please check the backend logs.';
-        } else {
-            errorMessage += 'Please check the file and try again.';
-        }
-        
-        showError(errorMessage);
-    } finally {
-        progressSection.style.display = 'none';
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Files';
     }
-}
 
-// Update Progress Bar
-function updateProgress(percentage, text) {
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
-    
-    if (progressFill && progressText) {
-        progressFill.style.width = `${percentage}%`;
-        progressText.textContent = text;
-        console.log(`Progress: ${percentage}% - ${text}`);
-    } else {
-        console.warn('Progress elements not found:', { progressFill, progressText });
-    }
-}
-
-// Show Error Message
-function showError(message) {
-    console.error('Error:', message);
-    
-    // Create a temporary error notification
-    const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #f44336;
-        color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
-        z-index: 9999;
-        max-width: 300px;
-        font-family: 'Inter', sans-serif;
-    `;
-    errorDiv.textContent = message;
-    
-    document.body.appendChild(errorDiv);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (errorDiv.parentNode) {
-            errorDiv.parentNode.removeChild(errorDiv);
+    // UI helpers
+    showLoading(text = 'Processing...') {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        
+        if (loadingOverlay && loadingText) {
+            loadingText.textContent = text;
+            loadingOverlay.style.display = 'flex';
         }
-    }, 5000);
-}
+    }
 
-// Show Success Message (for other operations)
-function showSuccessModal() {
-    const modal = document.getElementById('successModal');
-    modal.classList.add('show');
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        closeModal();
-    }, 5000);
-}
+    hideLoading() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+    }
 
-// Close Modal
-function closeModal() {
-    const modal = document.getElementById('successModal');
-    modal.classList.remove('show');
-}
+    showMessage(text, type) {
+        // Simple message display - you can enhance this with a proper toast system
+        console.log(`${type.toUpperCase()}: ${text}`);
+        
+        // For now, we'll use the existing modal system
+        if (type === 'success') {
+            this.showModal(text);
+        } else if (type === 'error') {
+            alert(`Error: ${text}`);
+        }
+    }
 
-// User Profile Setup
-function setupUserProfile() {
-    const userProfile = document.getElementById('userProfile');
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!userProfile.contains(e.target)) {
+    showModal(message) {
+        const modal = document.getElementById('successModal');
+        const modalBody = modal?.querySelector('.modal-body p');
+        
+        if (modal && modalBody) {
+            modalBody.textContent = message;
+            modal.style.display = 'block';
+        }
+    }
+
+    closeModal() {
+        const modal = document.getElementById('successModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // User profile
+    updateUserProfile() {
+        const username = localStorage.getItem('username');
+        const avatar = document.getElementById('avatar');
+        
+        if (avatar && username) {
+            avatar.innerHTML = `<span>${username.charAt(0).toUpperCase()}</span>`;
+        }
+    }
+
+    toggleDropdown() {
+        const dropdown = document.getElementById('dropdownMenu');
+        if (dropdown) {
+            dropdown.classList.toggle('show');
+        }
+    }
+
+    hideDropdown() {
             const dropdown = document.getElementById('dropdownMenu');
-            dropdown.style.opacity = '0';
-            dropdown.style.visibility = 'hidden';
-            dropdown.style.transform = 'translateY(-10px)';
+        if (dropdown) {
+            dropdown.classList.remove('show');
         }
-    });
-}
+    }
 
-// Show Account Details
-function showAccountDetails() {
-    // This would typically redirect to an account page
-    console.log('Show account details');
-    alert('Account details functionality would be implemented here.');
-}
+    showAccountDetails() {
+        const username = localStorage.getItem('username');
+        alert(`Username: ${username}\n\nAccount details functionality can be expanded here.`);
+    }
 
-// Logout Function
-function logout() {
-    // This would typically clear session and redirect to login
-    console.log('Logout initiated');
-    if (confirm('Are you sure you want to logout?')) {
-        // Clear any stored data
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Redirect to login page
+    logout() {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('username');
         window.location.href = 'login.html';
     }
 }
 
-// Add Animations
-function addAnimations() {
-    // Add entrance animations to cards
-    const cards = document.querySelectorAll('.upload-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
+// Utility functions
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.select();
+        document.execCommand('copy');
         
+        // Show feedback
+        const originalText = element.placeholder;
+        element.placeholder = 'Copied to clipboard!';
         setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 200);
-    });
-    
-    // Add animation to welcome section
-    const welcomeSection = document.querySelector('.welcome-section');
-    welcomeSection.style.opacity = '0';
-    welcomeSection.style.transform = 'translateY(20px)';
-    
-    setTimeout(() => {
-        welcomeSection.style.transition = 'all 0.8s ease';
-        welcomeSection.style.opacity = '1';
-        welcomeSection.style.transform = 'translateY(0)';
-    }, 100);
+            element.placeholder = originalText;
+        }, 2000);
+    }
 }
 
-// Show Error Message
-function showError(message) {
-    // Create error notification
-    const notification = document.createElement('div');
-    notification.className = 'error-notification';
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas fa-exclamation-circle"></i>
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-    
-    // Style the notification
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #fed7d7;
-        color: #c53030;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        border: 1px solid #feb2b2;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        z-index: 3000;
-        animation: slideInRight 0.3s ease;
-    `;
-    
-    // Add to page
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
+// Global functions for HTML onclick handlers
+function uploadDocument() {
+    dashboard.uploadDocument();
 }
 
-// Add CSS animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes fileSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(100%);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    .error-notification .notification-content {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    
-    .error-notification button {
-        background: none;
-        border: none;
-        color: #c53030;
-        cursor: pointer;
-        padding: 0.25rem;
-        border-radius: 4px;
-        transition: background 0.3s ease;
-    }
-    
-    .error-notification button:hover {
-        background: rgba(197, 48, 48, 0.1);
-    }
-`;
-document.head.appendChild(style);
+function removeFile(type) {
+    dashboard.removeFile();
+}
 
-// Export functions for potential external use
-window.CargoLayTimeDashboard = {
-    submitFiles,
-    removeFile,
-    showAccountDetails,
-    logout,
-    closeModal
-};
+function closeModal() {
+    dashboard.closeModal();
+}
+
+// Initialize dashboard when DOM is loaded
+let dashboard;
+document.addEventListener('DOMContentLoaded', () => {
+    dashboard = new DashboardAPI();
+});

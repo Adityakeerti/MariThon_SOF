@@ -5,6 +5,13 @@ from typing import Optional, Any
 from contextlib import asynccontextmanager
 
 from .pipeline_simple import SimpleExtractionPipeline, SimplePipelineConfig
+try:
+	from .pipeline import ExtractionPipeline, PipelineConfig  # type: ignore
+	_HAVE_FULL_PIPELINE = True
+except Exception:  # pragma: no cover
+	ExtractionPipeline = None  # type: ignore
+	PipelineConfig = None  # type: ignore
+	_HAVE_FULL_PIPELINE = False
 from .auth import router as auth_router
 
 pipeline: Optional[SimpleExtractionPipeline] = None
@@ -14,8 +21,13 @@ pipeline: Optional[SimpleExtractionPipeline] = None
 async def lifespan(app: FastAPI):
 	# Startup
 	global pipeline
-	config = SimplePipelineConfig()
-	pipeline = SimpleExtractionPipeline(config)
+	if _HAVE_FULL_PIPELINE:
+		try:
+			pipeline = ExtractionPipeline(PipelineConfig())  # type: ignore[arg-type]
+		except Exception:
+			pipeline = SimpleExtractionPipeline(SimplePipelineConfig())
+	else:
+		pipeline = SimpleExtractionPipeline(SimplePipelineConfig())
 	yield
 	# Shutdown
 	pass

@@ -2,106 +2,6 @@
 	const yearEl = document.getElementById('year');
 	if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-	// User Profile Dropdown Functionality
-	function setupUserProfile() {
-		const userProfile = document.getElementById('userProfile');
-		const dropdownMenu = document.getElementById('dropdownMenu');
-		
-		if (userProfile && dropdownMenu) {
-			userProfile.addEventListener('click', function(e) {
-				e.stopPropagation();
-				dropdownMenu.classList.toggle('show');
-			});
-			
-			// Close dropdown when clicking outside
-			document.addEventListener('click', function() {
-				dropdownMenu.classList.remove('show');
-			});
-		}
-	}
-
-	function showAccountDetails() {
-		alert('Account details functionality coming soon!');
-	}
-
-	function logout() {
-		// Clear any stored data
-		localStorage.clear();
-		// Redirect to login page
-		window.location.href = 'index.html';
-	}
-
-	// Initialize user profile functionality
-	document.addEventListener('DOMContentLoaded', function() {
-		setupUserProfile();
-	});
-
-	// Chart.js pie chart instance
-	let laytimeChart = null;
-
-	// Initialize pie chart
-	function initializeChart() {
-		const ctx = document.getElementById('laytimeChart');
-		if (ctx) {
-			laytimeChart = new Chart(ctx, {
-				type: 'pie',
-				data: {
-					labels: ['Required Time', 'Time Saved'],
-					datasets: [{
-						data: [0, 0],
-						backgroundColor: [
-							'#ef4444', // Red for required time
-							'#10b981'  // Green for time saved
-						],
-						borderWidth: 2,
-						borderColor: '#ffffff'
-					}]
-				},
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					plugins: {
-						legend: {
-							position: 'bottom',
-							labels: {
-								padding: 20,
-								usePointStyle: true,
-								font: {
-									size: 12
-								}
-							}
-						},
-						tooltip: {
-							callbacks: {
-								label: function(context) {
-									const label = context.label || '';
-									const value = context.parsed || 0;
-									return `${label}: ${value.toFixed(2)} days`;
-								}
-							}
-						}
-					}
-				}
-			});
-		}
-	}
-
-	// Update pie chart with new data
-	function updateChart(required, allowed) {
-		if (laytimeChart) {
-			const delta = Math.max(0, allowed - required);
-			const used = Math.min(required, allowed);
-			
-			laytimeChart.data.datasets[0].data = [used, delta];
-			laytimeChart.update();
-		}
-	}
-
-	// Initialize chart when page loads
-	document.addEventListener('DOMContentLoaded', function() {
-		initializeChart();
-	});
-
 	// Prefill from localStorage if present
 	try {
 		const raw = localStorage.getItem('laytime_prefill');
@@ -140,41 +40,23 @@
 		const amountPerDay = isDemurrage ? demurrage : dispatch;
 		const amount = +(days * amountPerDay).toFixed(2);
 
-		// Update pie chart
-		updateChart(daysRequired, allowed);
-
 		const output = document.getElementById('c-output');
 		output.innerHTML = `
-			<div class="vessel-info">
-				<div class="vessel-name">${text('c-vessel')} — ${text('c-port')}</div>
-				<div class="vessel-route">${text('c-from')} → ${text('c-to')} • ${text('c-operation')}</div>
-			</div>
-			
-			<div class="calculation-type">
-				<div class="type-badge ${isDemurrage ? 'demurrage' : 'dispatch'}">
-					${isDemurrage ? 'DEMURRAGE' : 'DISPATCH'}
+			<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+				<div>
+					<div style="font-weight:800;font-size:18px;color:var(--color-primary)">${text('c-vessel')} — ${text('c-port')}</div>
+					<div style="color:#6b7280">${text('c-from')} → ${text('c-to')} • ${text('c-operation')}</div>
 				</div>
+				<div class="btn ${isDemurrage ? 'btn-primary' : 'btn-accent'}" style="pointer-events:none">${isDemurrage ? 'DEMURRAGE' : 'DISPATCH'}</div>
 			</div>
-			
-			<div class="features">
-				<div class="feature">
-					<h3>Required</h3>
-					<p>${fmt(daysRequired)} days</p>
-				</div>
-				<div class="feature">
-					<h3>Allowed</h3>
-					<p>${fmt(allowed)} days</p>
-				</div>
-				<div class="feature">
-					<h3>Delta</h3>
-					<p>${fmt(days)} days ${isDemurrage ? 'over' : 'saved'}</p>
-				</div>
+			<div style="height:12px"></div>
+			<div class="features" style="grid-template-columns: repeat(3, 1fr);">
+				<div class="feature"><h3>Required</h3><p>${fmt(daysRequired)} days</p></div>
+				<div class="feature"><h3>Allowed</h3><p>${fmt(allowed)} days</p></div>
+				<div class="feature"><h3>Delta</h3><p>${fmt(days)} days ${isDemurrage ? 'over' : 'saved'}</p></div>
 			</div>
-			
-			<div class="total-amount">
-				<h3>Total ${isDemurrage ? 'Demurrage' : 'Dispatch'}</h3>
-				<p class="amount-value">$${fmt(amount)}</p>
-			</div>
+			<div style="height:12px"></div>
+			<div class="feature"><h3>Total ${isDemurrage ? 'Demurrage' : 'Dispatch'}</h3><p style="font-size:20px;font-weight:800;color:var(--color-primary)">$${fmt(amount)}</p></div>
 		`;
 	});
 })();

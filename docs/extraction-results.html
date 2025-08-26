@@ -3,251 +3,159 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Laytime Calculator • Cargo Laytime</title>
+	<title>SOF Extraction Results • Cargo Laytime</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="assets/css/theme.css" />
 	<link rel="stylesheet" href="assets/css/extraction-results.css" />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	
-	<!-- External Libraries for Export Functionality -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-	<!-- Top Navigation Bar -->
-	<nav class="top-nav">
-		<div class="nav-container">
-			<div class="nav-left">
-				<div class="logo">
-					<i class="fas fa-ship"></i>
-					<span>Cargo LayTime</span>
-				</div>
-			</div>
-			
-			<div class="nav-right">
-				<div class="user-profile" id="userProfile">
-					<div class="avatar" id="avatar">
-						<i class="fas fa-user"></i>
-					</div>
-					<div class="dropdown-menu" id="dropdownMenu">
-						<div class="dropdown-item" onclick="showAccountDetails()">
-							<i class="fas fa-user-cog"></i>
-							<span>Account Details</span>
-						</div>
-						<div class="dropdown-item" onclick="logout()">
-							<i class="fas fa-sign-out-alt"></i>
-							<span>Log Out</span>
-						</div>
+	<header class="header">
+		<div class="container nav">
+			<a class="brand" href="index.html">
+				<span class="brand-badge">CL</span>
+				<span>Cargo Laytime</span>
+			</a>
+			<div class="nav-cta">
+				<a class="btn btn-ghost" href="dashboard.html">Dashboard</a>
+				<div class="profile-chip">
+					<span class="avatar" id="userAvatar">U</span>
+					<div>
+						<div id="profile-name">User</div>
+						<div class="role" id="profile-role">Member</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</nav>
-
-	<!-- Export Popup Modal -->
-	<div class="export-popup-overlay hidden" id="export-popup-overlay">
-		<div class="export-popup">
-			<div class="export-popup-header">
-				<h3>📤 Export & Download</h3>
-				<button class="close-btn" onclick="hideExportPopup()">×</button>
-			</div>
-			<div class="export-popup-content">
-				<p>Choose your preferred export format:</p>
-				<div class="export-options">
-					<div class="export-option" onclick="exportToPDF(); hideExportPopup();">
-						<div class="export-option-icon">📄</div>
-						<div class="export-option-text">
-							<h4>PDF Report</h4>
-							<p>Professional PDF report with all calculation details</p>
-						</div>
-					</div>
-					<div class="export-option" onclick="exportToExcel(); hideExportPopup();">
-						<div class="export-option-icon">📊</div>
-						<div class="export-option-text">
-							<h4>Excel Spreadsheet</h4>
-							<p>Detailed Excel file with calculations and data</p>
-						</div>
-					</div>
-					<div class="export-option" onclick="exportToJSON(); hideExportPopup();">
-						<div class="export-option-icon">🔧</div>
-						<div class="export-option-text">
-							<h4>JSON Data</h4>
-							<p>Structured data for system integration</p>
-						</div>
-					</div>
-					<div class="export-option" onclick="exportToCSV(); hideExportPopup();">
-						<div class="export-option-icon">📋</div>
-						<div class="export-option-text">
-							<h4>CSV Export</h4>
-							<p>Comma-separated values for spreadsheet import</p>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+	</header>
 
 	<main class="workspace">
 		<div class="workspace-card">
 			<div class="topbar">
 				<div class="breadcrumb">
-					<a href="dashboard.html">Dashboard</a> / <span>Laytime Calculator</span>
+					<a href="dashboard.html">Dashboard</a> / <span>SOF Extraction Results</span>
 				</div>
 				<div class="actions">
 					<button class="action-btn" onclick="window.history.back()">Back</button>
-					<button class="action-btn">Help</button>
-					<!-- Export Button (initially hidden) -->
-					<div class="export-button hidden" id="export-button">
-						<button class="action-btn btn-export" onclick="showExportPopup()">
-							📤 Export
-						</button>
-					</div>
+					<button class="action-btn" onclick="showHelp()">Help</button>
+					<button class="action-btn btn-primary" id="calculateBtn" onclick="calculateLaytime()">
+						<i class="fas fa-calculator"></i> Calculate Laytime
+					</button>
 				</div>
 			</div>
 
 			<!-- Split Layout: Form on Left, Results on Right -->
 			<div class="split-layout">
-				<!-- Left Panel: Fetched Data Form -->
+				<!-- Left Panel: Vessel/Voyage Information Form -->
 				<div class="left-panel">
 					<div class="panel-header">
-						<h2>Laytime Calculator</h2>
-						<div class="success-banner">
+						<h2><i class="fas fa-ship"></i> Vessel & Voyage Details</h2>
+						<div class="success-banner" id="successBanner">
 							<div class="success-icon">✅</div>
 							<div>
-								<h3>SoF/CP was uploaded successfully</h3>
-								<p>Please verify the following details and click on "Calculate"</p>
+								<h3>SOF Document Parsed Successfully</h3>
+								<p>Review and edit the extracted details below</p>
 							</div>
 						</div>
 					</div>
 					
 					<div class="data-form" id="data-form">
 						<div class="form-grid">
-							<!-- Left Column -->
-							<div class="form-column">
-								<div class="form-item">
-									<label class="label">CREATED FOR</label>
-									<input class="input-sm" id="f-vessel" placeholder="Vessel / Account name" />
-								</div>
-								<div class="form-item">
-									<label class="label">VOYAGE TO</label>
-									<input class="input-sm" id="f-to" placeholder="Destination port" />
-								</div>
-								<div class="form-item">
-									<label class="label">PORT</label>
-									<input class="input-sm" id="f-port" placeholder="Port name" />
-								</div>
-								<div class="form-item">
-									<label class="label">DEMURRAGE ($/DAY)</label>
-									<input class="input-sm" id="f-demurrage" type="number" placeholder="e.g., 5000" />
-								</div>
-								<div class="form-item">
-									<label class="label">LOAD/DISCH (MT/DAY)</label>
-									<input class="input-sm" id="f-rate" type="number" placeholder="e.g., 1000" />
-								</div>
+							<div class="form-item">
+								<label class="label">VESSEL NAME</label>
+								<input class="input-sm" id="vessel-name" placeholder="e.g., M.V. ORION TRADER" />
 							</div>
-							
-							<!-- Right Column -->
-							<div class="form-column">
-								<div class="form-item">
-									<label class="label">VOYAGE FROM</label>
-									<input class="input-sm" id="f-from" placeholder="Origin port" />
-								</div>
-								<div class="form-item">
-									<label class="label">CARGO</label>
-									<input class="input-sm" id="f-cargo" placeholder="Cargo description" />
-								</div>
-								<div class="form-item">
-									<label class="label">OPERATION</label>
-									<select class="select" id="f-operation">
-										<option value="load">Load</option>
-										<option value="discharge" selected>Discharge</option>
-									</select>
-								</div>
-								<div class="form-item">
-									<label class="label">DISPATCH ($/DAY)</label>
-									<input class="input-sm" id="f-dispatch" type="number" placeholder="e.g., 2500" />
-								</div>
-								<div class="form-item">
-									<label class="label">CARGO QTY (MT)</label>
-									<input class="input-sm" id="f-qty" type="number" placeholder="e.g., 47000" />
-								</div>
+							<div class="form-item">
+								<label class="label">MASTER</label>
+								<input class="input-sm" id="master" placeholder="e.g., CAPTAIN A. K. SINGH" />
 							</div>
-						</div>
-						
-						<!-- ALLOWED LAYTIME field spans both columns -->
-						<div class="form-item full-width">
-							<label class="label">ALLOWED LAYTIME (DAYS)</label>
-							<input class="input-sm" id="f-allowed" type="number" placeholder="e.g., 5" />
-						</div>
-						
-						<div class="form-actions">
-							<button class="btn btn-primary" id="calc-btn">CALCULATE</button>
+							<div class="form-item">
+								<label class="label">AGENT</label>
+								<input class="input-sm" id="agent" placeholder="e.g., GLOBAL MARITIME SERVICES LTD" />
+							</div>
+							<div class="form-item">
+								<label class="label">PORT OF LOADING</label>
+								<input class="input-sm" id="port-loading" placeholder="e.g., Koh Sichang, Thailand" />
+							</div>
+							<div class="form-item">
+								<label class="label">PORT OF DISCHARGE</label>
+								<input class="input-sm" id="port-discharge" placeholder="e.g., New York, USA" />
+							</div>
+							<div class="form-item">
+								<label class="label">CARGO</label>
+								<input class="input-sm" id="cargo" placeholder="e.g., Bagged Rice" />
+							</div>
+							<div class="form-item">
+								<label class="label">QUANTITY (MT)</label>
+								<input class="input-sm" id="quantity" type="number" placeholder="e.g., 41998" />
+							</div>
+							<div class="form-item">
+								<label class="label">ALLOWED LAYTIME (DAYS)</label>
+								<input class="input-sm" id="allowed-laytime" type="number" placeholder="e.g., 5" />
+							</div>
+							<div class="form-item">
+								<label class="label">DEMURRAGE ($/DAY)</label>
+								<input class="input-sm" id="demurrage" type="number" placeholder="e.g., 5000" />
+							</div>
+							<div class="form-item">
+								<label class="label">DISPATCH ($/DAY)</label>
+								<input class="input-sm" id="dispatch" type="number" placeholder="e.g., 2500" />
+							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Right Panel: Results and Events Table -->
+				<!-- Right Panel: Events Timeline Table -->
 				<div class="right-panel" id="right-panel">
 					<div class="panel-header">
-						<div class="panel-header-content">
-							<h2>Laytime Calculation Results</h2>
-							<a href="calculate.html" class="dispatch-value-btn">Dispatch Value</a>
-						</div>
+						<h2><i class="fas fa-calendar-alt"></i> Chronology of Events</h2>
+						<button class="btn btn-primary" onclick="addNewEvent()">
+							<i class="fas fa-plus"></i> Add Event
+						</button>
 					</div>
 					
-					<!-- Initial State: Show success message -->
-					<div class="initial-state" id="initial-state">
-						<div class="success-message">
-							<div class="success-icon">✅</div>
-							<h3>SOF/CP Parsed Successfully</h3>
-							<p>Please verify the extracted details on the left and click Calculate to proceed with laytime calculations.</p>
+					<!-- Events Table -->
+					<div class="events-section">
+						<div class="events-table">
+							<table>
+								<thead>
+									<tr>
+										<th>EVENT DESCRIPTION</th>
+										<th>DATE</th>
+										<th>START TIME</th>
+										<th>END TIME</th>
+										<th>DURATION</th>
+										<th>REMARKS</th>
+										<th>ACTIONS</th>
+									</tr>
+								</thead>
+								<tbody id="events-tbody">
+									<!-- Events will be populated here -->
+								</tbody>
+							</table>
 						</div>
 					</div>
 
-					<!-- Results Content (initially hidden) -->
-					<div class="results-content hidden" id="results-content">
-						<!-- Laytime Summary -->
-						<div class="laytime-summary-section">
-							<div class="summary-header">
-								<h3>LAYTIME ALLOWED</h3>
-								<div class="summary-value" id="laytime-allowed">0.00 Days</div>
+					<!-- Laytime Summary -->
+					<div class="laytime-summary" id="laytimeSummary" style="display: none;">
+						<div class="summary-grid">
+							<div class="summary-item">
+								<label>Total Laytime Used:</label>
+								<span id="total-laytime">0.00 Days</span>
 							</div>
-						</div>
-
-						<!-- Add Event Form -->
-						<div class="add-event-section">
-							<div class="add-event-form">
-								<input type="text" id="new-event" placeholder="EVENT" />
-								<input type="datetime-local" id="start-datetime" />
-								<input type="datetime-local" id="end-datetime" />
-								<button class="btn btn-primary" id="add-event-btn">ADD EVENT</button>
+							<div class="summary-item">
+								<label>Laytime Remaining:</label>
+								<span id="laytime-remaining">0.00 Days</span>
 							</div>
-						</div>
-
-						<!-- Events Timeline -->
-						<div class="events-section">
-							<h3>Events Timeline</h3>
-							<div class="events-table">
-								<table>
-									<thead>
-										<tr>
-											<th>EVENTS</th>
-											<th>DAY</th>
-											<th>START DATE TIME</th>
-											<th>END DATE TIME</th>
-											<th>LAYTIME TIME UTILIZATION</th>
-											<th>LAYTIME % UTILIZATION</th>
-											<th>LAYTIME CONSUMED</th>
-											<th>LAYTIME REMAINING</th>
-											<th>ACTION</th>
-										</tr>
-									</thead>
-									<tbody id="events-tbody">
-										<!-- Events will be populated here -->
-									</tbody>
-								</table>
+							<div class="summary-item">
+								<label>Demurrage Cost:</label>
+								<span id="demurrage-cost">$0.00</span>
+							</div>
+							<div class="summary-item">
+								<label>Dispatch Credit:</label>
+								<span id="dispatch-credit">$0.00</span>
 							</div>
 						</div>
 					</div>
@@ -255,6 +163,87 @@
 			</div>
 		</div>
 	</main>
+
+	<!-- Add Event Modal -->
+	<div class="modal" id="addEventModal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3>Add New Event</h3>
+				<button class="close-btn" onclick="closeAddEventModal()">×</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label>Event Description</label>
+					<input type="text" id="newEventDesc" placeholder="e.g., Loading Bags" />
+				</div>
+				<div class="form-group">
+					<label>Date</label>
+					<input type="date" id="newEventDate" />
+				</div>
+				<div class="form-group">
+					<label>Start Time</label>
+					<input type="time" id="newEventStart" />
+				</div>
+				<div class="form-group">
+					<label>End Time</label>
+					<input type="time" id="newEventEnd" />
+				</div>
+				<div class="form-group">
+					<label>Remarks</label>
+					<input type="text" id="newEventRemarks" placeholder="e.g., 1st shift" />
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" onclick="closeAddEventModal()">Cancel</button>
+				<button class="btn btn-primary" onclick="saveNewEvent()">Add Event</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Edit Event Modal -->
+	<div class="modal" id="editEventModal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3>Edit Event</h3>
+				<button class="close-btn" onclick="closeEditEventModal()">×</button>
+			</div>
+			<div class="modal-body">
+				<input type="hidden" id="editEventIndex" />
+				<div class="form-group">
+					<label>Event Description</label>
+					<input type="text" id="editEventDesc" />
+				</div>
+				<div class="form-group">
+					<label>Date</label>
+					<input type="date" id="editEventDate" />
+				</div>
+				<div class="form-group">
+					<label>Start Time</label>
+					<input type="time" id="editEventStart" />
+				</div>
+				<div class="form-group">
+					<label>End Time</label>
+					<input type="time" id="editEventEnd" />
+				</div>
+				<div class="form-group">
+					<label>Remarks</label>
+					<input type="text" id="editEventRemarks" />
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" onclick="closeEditEventModal()">Cancel</button>
+				<button class="btn btn-primary" onclick="saveEditedEvent()">Save Changes</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Loading Overlay -->
+	<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+		<div class="loading-spinner">
+			<i class="fas fa-spinner fa-spin"></i>
+			<p id="loadingText">Processing...</p>
+		</div>
+	</div>
 
 	<footer class="footer">
 		<div class="container">

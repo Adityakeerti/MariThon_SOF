@@ -19,8 +19,6 @@
                 </div>
             </div>
             
-
-            
             <div class="nav-right">
                 <div class="user-profile" id="userProfile">
                     <div class="avatar" id="avatar">
@@ -47,7 +45,7 @@
             <!-- Welcome Section -->
             <div class="welcome-section">
                 <h2>Cargo LayTime Dashboard</h2>
-                <p>Upload your shipping documents to begin laytime calculations</p>
+                <p>Upload your shipping documents to begin processing</p>
             </div>
 
             <!-- Upload Cards Container -->
@@ -59,7 +57,7 @@
                             <i class="fas fa-file-upload"></i>
                         </div>
                         <h3>Upload SOF File</h3>
-                        <p>PDF or DOCX format</p>
+                        <p>PDF format recommended</p>
                     </div>
                     
                     <div class="upload-area" id="sofUploadArea">
@@ -84,45 +82,75 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- CP File Upload Card -->
-                <div class="upload-card" id="cpCard">
-                    <div class="card-header">
-                        <div class="upload-icon">
-                            <i class="fas fa-file-contract"></i>
-                        </div>
-                        <h3>Upload CP File</h3>
-                        <p>PDF or DOCX format (Optional)</p>
+            <!-- Document Processing Section (initially hidden) -->
+            <div class="processing-section" id="processingSection" style="display: none;">
+                <h3>Document Processing</h3>
+                <div class="processing-buttons">
+                    <button class="process-btn" id="ocrBtn" onclick="runOCR()">
+                        <i class="fas fa-eye"></i>
+                        <span>Run OCR</span>
+                    </button>
+                    <button class="process-btn" id="clausesBtn" onclick="extractClauses()" disabled>
+                        <i class="fas fa-list"></i>
+                        <span>Extract Clauses</span>
+                    </button>
+                    <button class="process-btn" id="summaryBtn" onclick="generateSummary()" disabled>
+                        <i class="fas fa-file-text"></i>
+                        <span>Generate Summary</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section (initially hidden) -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h3>Processing Results</h3>
+                
+                <!-- OCR Results -->
+                <div class="result-card" id="ocrResults" style="display: none;">
+                    <div class="result-header">
+                        <h4><i class="fas fa-eye"></i> OCR Results</h4>
+                        <button class="copy-btn" onclick="copyToClipboard('ocrText')">
+                            <i class="fas fa-copy"></i>
+                        </button>
                     </div>
-                    
-                    <div class="upload-area" id="cpUploadArea">
-                        <div class="upload-content">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Drag & drop your CP file here</p>
-                            <p class="upload-hint">or</p>
-                            <button class="choose-file-btn" onclick="document.getElementById('cpFileInput').click()">
-                                Choose File
-                            </button>
-                        </div>
-                        <input type="file" id="cpFileInput" accept=".pdf,.docx" style="display: none;">
+                    <div class="result-content">
+                        <textarea id="ocrText" readonly placeholder="OCR text will appear here..."></textarea>
                     </div>
-                    
-                    <div class="file-info" id="cpFileInfo" style="display: none;">
-                        <div class="file-details">
-                            <i class="fas fa-file-alt"></i>
-                            <span class="file-name" id="cpFileName"></span>
-                            <button class="remove-file" onclick="removeFile('cp')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
+                </div>
+
+                <!-- Clauses Results -->
+                <div class="result-card" id="clausesResults" style="display: none;">
+                    <div class="result-header">
+                        <h4><i class="fas fa-list"></i> Extracted Clauses</h4>
+                        <button class="copy-btn" onclick="copyToClipboard('clausesText')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="result-content">
+                        <div id="clausesList"></div>
+                    </div>
+                </div>
+
+                <!-- Summary Results -->
+                <div class="result-card" id="summaryResults" style="display: none;">
+                    <div class="result-header">
+                        <h4><i class="fas fa-file-text"></i> Document Summary</h4>
+                        <button class="copy-btn" onclick="copyToClipboard('summaryText')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="result-content">
+                        <textarea id="summaryText" readonly placeholder="Summary will appear here..."></textarea>
                     </div>
                 </div>
             </div>
 
             <!-- Submit Button -->
             <div class="submit-section">
-                <button class="submit-btn" id="submitBtn" onclick="submitFiles()">
-                    <span class="btn-text">Submit Files</span>
+                <button class="submit-btn" id="submitBtn" onclick="uploadDocument()">
+                    <span class="btn-text">Upload Document</span>
                     <div class="btn-overlay"></div>
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -153,11 +181,19 @@
                 <h3>Upload Successful!</h3>
             </div>
             <div class="modal-body">
-                <p>Your files have been uploaded successfully. Processing will begin shortly.</p>
+                <p>Your document has been uploaded successfully. You can now process it using the buttons above.</p>
             </div>
             <div class="modal-footer">
                 <button class="modal-btn" onclick="closeModal()">Continue</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p id="loadingText">Processing...</p>
         </div>
     </div>
 

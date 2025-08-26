@@ -6,154 +6,64 @@
 	<title>Laytime Calculator • Cargo Laytime</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="assets/css/theme.css" />
 	<link rel="stylesheet" href="assets/css/dashboard.css" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<!-- Chart.js for pie chart -->
-	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-	<!-- Top Navigation Bar -->
-	<nav class="top-nav">
-		<div class="nav-container">
-			<div class="nav-left">
-				<div class="logo">
-					<i class="fas fa-ship"></i>
-					<span>Cargo LayTime</span>
-				</div>
-			</div>
-			
-			<div class="nav-right">
-				<div class="user-profile" id="userProfile">
-					<div class="avatar" id="avatar">
-						<i class="fas fa-user"></i>
-					</div>
-					<div class="dropdown-menu" id="dropdownMenu">
-						<div class="dropdown-item" onclick="showAccountDetails()">
-							<i class="fas fa-user-cog"></i>
-							<span>Account Details</span>
-						</div>
-						<div class="dropdown-item" onclick="logout()">
-							<i class="fas fa-sign-out-alt"></i>
-							<span>Log Out</span>
-						</div>
-					</div>
-				</div>
+	<header class="header">
+		<div class="container nav">
+			<a class="brand" href="dashboard.html">
+				<span class="brand-badge">CL</span>
+				<span>Cargo Laytime</span>
+			</a>
+			<div class="nav-cta">
+				<a class="btn btn-ghost" href="dashboard.html">Back to Dashboard</a>
 			</div>
 		</div>
-	</nav>
+	</header>
 
-	<!-- Main Content Area -->
-	<main class="main-content">
-		<div class="dashboard-container">
-			<!-- Page Header -->
-			<div class="page-header">
-				<div class="breadcrumb">
-					<a href="dashboard.html">Dashboard</a> / <span>Laytime Calculator</span>
-				</div>
-				<div class="page-actions">
-					<a href="dashboard.html" class="action-btn">Back to Dashboard</a>
-				</div>
-			</div>
-
-			<!-- Main Calculator Section -->
-			<div class="calculator-section">
-				<!-- Two-Column Table Layout -->
-				<div class="table-section">
-					<div class="table-header">
-						<h2>Laytime Calculator</h2>
+	<main class="workspace">
+		<div class="container">
+			<h2 style="margin:0 0 12px;color:var(--color-primary)">Laytime Calculator</h2>
+			<div class="workspace-card">
+				<div class="grid" style="align-items:start;">
+					<div class="panel" style="background:#fff;">
 						<div class="banner">Verify details parsed from your upload, then calculate.</div>
-					</div>
-					
-					<div class="form-grid">
-						<!-- Left Column -->
-						<div class="form-column">
-							<div class="form-item">
-								<label class="label">Created For</label>
-								<input class="input-sm" id="c-vessel" placeholder="Vessel / Account name" />
-							</div>
-							<div class="form-item">
-								<label class="label">Voyage From</label>
-								<input class="input-sm" id="c-from" placeholder="Origin port" />
-							</div>
-							<div class="form-item">
-								<label class="label">Voyage To</label>
-								<input class="input-sm" id="c-to" placeholder="Destination port" />
-							</div>
-							<div class="form-item">
-								<label class="label">Cargo</label>
-								<input class="input-sm" id="c-cargo" placeholder="Cargo description" />
-							</div>
-							<div class="form-item">
-								<label class="label">Port</label>
-								<input class="input-sm" id="c-port" placeholder="Port name" />
-							</div>
-						</div>
-						
-						<!-- Right Column -->
-						<div class="form-column">
-							<div class="form-item">
-								<label class="label">Operation</label>
+						<div class="form-grid">
+							<div class="form-item"><label class="label">Created For</label><input class="input-sm" id="c-vessel" placeholder="Vessel / Account name" /></div>
+							<div class="form-item"><label class="label">Voyage From</label><input class="input-sm" id="c-from" placeholder="Origin port" /></div>
+							<div class="form-item"><label class="label">Voyage To</label><input class="input-sm" id="c-to" placeholder="Destination port" /></div>
+							<div class="form-item"><label class="label">Cargo</label><input class="input-sm" id="c-cargo" placeholder="Cargo description" /></div>
+							<div class="form-item"><label class="label">Port</label><input class="input-sm" id="c-port" placeholder="Port name" /></div>
+							<div class="form-item"><label class="label">Operation</label>
 								<select class="select" id="c-operation">
 									<option value="load">Load</option>
 									<option value="discharge" selected>Discharge</option>
 								</select>
 							</div>
-							<div class="form-item">
-								<label class="label">Allowed Laytime (days)</label>
-								<input class="input-sm" id="c-allowed" type="number" placeholder="e.g., 5" />
-							</div>
-							<div class="form-item">
-								<label class="label">Demurrage ($/day)</label>
-								<input class="input-sm" id="c-demurrage" type="number" placeholder="e.g., 5000" />
-							</div>
-							<div class="form-item">
-								<label class="label">Dispatch ($/day)</label>
-								<input class="input-sm" id="c-dispatch" type="number" placeholder="e.g., 2500" />
-							</div>
-							<div class="form-item">
-								<label class="label">Rate (MT/day)</label>
-								<input class="input-sm" id="c-rate" type="number" placeholder="e.g., 1000" />
-							</div>
-							<div class="form-item">
-								<label class="label">Cargo Qty (MT)</label>
-								<input class="input-sm" id="c-qty" type="number" placeholder="e.g., 47000" />
-							</div>
+							<div class="form-item"><label class="label">Allowed Laytime (days)</label><input class="input-sm" id="c-allowed" type="number" placeholder="e.g., 5" /></div>
+							<div class="form-item"><label class="label">Demurrage ($/day)</label><input class="input-sm" id="c-demurrage" type="number" placeholder="e.g., 5000" /></div>
+							<div class="form-item"><label class="label">Dispatch ($/day)</label><input class="input-sm" id="c-dispatch" type="number" placeholder="e.g., 2500" /></div>
+							<div class="form-item"><label class="label">Rate (MT/day)</label><input class="input-sm" id="c-rate" type="number" placeholder="e.g., 1000" /></div>
+							<div class="form-item"><label class="label">Cargo Qty (MT)</label><input class="input-sm" id="c-qty" type="number" placeholder="e.g., 47000" /></div>
+						</div>
+						<div class="submit-area">
+							<button class="btn btn-primary" id="c-calc">Calculate</button>
 						</div>
 					</div>
-					
-					<div class="submit-area">
-						<button class="btn btn-primary" id="c-calc">Calculate</button>
-					</div>
-				</div>
-
-				<!-- Results and Chart Section -->
-				<div class="results-section">
-					<!-- Left Side: Vertical Results Display -->
-					<div class="results-display">
-						<h3>Calculation Results</h3>
-						<div id="c-output" class="result-panel">
-							<div class="initial-message">Enter details and press Calculate.</div>
-						</div>
-					</div>
-					
-					<!-- Right Side: Pie Chart -->
-					<div class="chart-display">
-						<h3>Time Distribution</h3>
-						<div class="chart-container">
-							<canvas id="laytimeChart" width="300" height="300"></canvas>
-						</div>
+					<div class="panel" style="background:#f9fbff;">
+						<h3 style="margin:0 0 10px">Result</h3>
+						<div id="c-output" class="result-panel">Enter details and press Calculate.</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</main>
 
-	<!-- Footer -->
 	<footer class="footer">
-		<div class="footer-content">
-			<p>&copy; 2025 Cargo LayTime. All rights reserved.</p>
+		<div class="container">
+			<span>© <span id="year"></span> Cargo Laytime. All rights reserved.</span>
 		</div>
 	</footer>
 
