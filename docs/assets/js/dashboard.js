@@ -13,22 +13,11 @@ class DashboardAPI {
         this.updateUserProfile();
     }
 
-    // Authentication check
-    checkAuth() {
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-            window.location.href = 'login.html';
-            return;
-        }
-    }
+    // Authentication check (disabled for public demo)
+    checkAuth() { /* no-op */ }
 
-    // Get auth headers
-    getAuthHeaders() {
-        const token = localStorage.getItem('auth_token');
-        return {
-            'Authorization': `Bearer ${token}`
-        };
-    }
+    // Get auth headers (not needed)
+    getAuthHeaders() { return {}; }
 
     // Setup event listeners
     setupEventListeners() {
@@ -127,29 +116,29 @@ class DashboardAPI {
         this.showLoading('Uploading document...');
         
         try {
-        const formData = new FormData();
-            formData.append('file', this.currentFile);
-        
-            const response = await fetch(`${this.baseURL}/documents/upload`, {
-            method: 'POST',
-                headers: this.getAuthHeaders(),
-            body: formData
-        });
-        
-            if (response.ok) {
-        const data = await response.json();
-                this.currentDocumentId = data.id;
-                
-                this.showMessage('Document uploaded successfully!', 'success');
-                
-                // Redirect to extraction results page with document ID
-                setTimeout(() => {
-                    window.location.href = `extraction-results.html?doc_id=${this.currentDocumentId}`;
-                }, 1500);
-            } else {
-                const error = await response.json();
-                throw new Error(error.detail || 'Upload failed');
+            const formData = new FormData();
+            // Backend expects field name 'pdf'
+            formData.append('pdf', this.currentFile);
+
+            const response = await fetch(`${this.baseURL}/extract`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || 'Extraction failed');
             }
+
+            const result = await response.json();
+            // Persist extraction result for results page
+            localStorage.setItem('extractionResult', JSON.stringify(result));
+
+            this.showMessage('Extraction successful! Opening results…', 'success');
+
+            setTimeout(() => {
+                window.location.href = 'extraction-results.html';
+            }, 800);
         } catch (error) {
             console.error('Upload error:', error);
             this.showMessage(`Upload failed: ${error.message}`, 'error');

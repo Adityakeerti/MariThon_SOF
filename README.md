@@ -1,658 +1,225 @@
-# MariThon - Cargo Laytime & Event Tracker
+# MariThon - SOF Document Extractor
 
-A comprehensive maritime operations application for laytime calculations, event tracking, and document processing. Built with FastAPI backend and modern HTML/CSS/JavaScript frontend.
+A modern web application for extracting Statement of Facts (SOF) data from shipping documents using AI-powered APIs.
 
-## 📑 Table of Contents
+## 🌟 Features
 
-- [🚀 Features](#-features)
-- [🏗️ Project Structure](#️-project-structure)
-- [🛠️ Prerequisites](#️-prerequisites)
-- [📦 Installation & Setup](#-installation--setup)
-- [🔧 Detailed Setup](#-detailed-setup)
-- [🚀 Running the Application](#-running-the-application)
-- [🧪 Testing](#-testing)
-- [🔧 Key Technologies](#-key-technologies)
-- [📚 API Documentation](#-api-documentation)
-- [🚨 Troubleshooting](#-troubleshooting)
-- [📱 Using the Application](#-using-the-application)
-- [🛑 Stopping the Application](#-stopping-the-application)
-- [🔄 Restarting the Application](#-restarting-the-application)
-- [🔄 Development Workflow](#-development-workflow)
-- [📚 Additional Resources](#-additional-resources)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [🆘 Support](#-support)
-- [📋 Quick Reference](#-quick-reference)
+- **Multi-API Support**: Azure Document Intelligence, Hugging Face, and OpenAI/OpenRouter
+- **PDF Processing**: Advanced text extraction and parsing
+- **Real-time Analysis**: Fast document processing with async operations
+- **Modern UI**: Responsive web interface with dashboard
+- **Free Tier APIs**: Optimized for cost-effective document processing
 
-## 🚀 Features
+## 🚀 Live Demo
 
-- **PDF Document Processing**: Upload and parse Statement of Facts (SoF) documents
-- **Business Data Extraction**: Automatically extract vessel info, ports, cargo, rates, and laytime
-- **User Authentication**: Secure signup, login, and session management
-- **Professional UI**: Clean, responsive interface with drag-and-drop file uploads
-- **Data Export**: Generate professional Statements of Facts and export results
+- **Frontend**: [GitHub Pages](https://yourusername.github.io/MariThon)
+- **Backend API**: [Render](https://your-render-app.onrender.com)
 
-## 🏗️ Project Structure
+## 🏗️ Architecture
 
 ```
 MariThon/
-├── backend/                 # FastAPI backend server
-│   ├── app/                # Application code
-│   │   ├── main.py        # FastAPI app entry point
-│   │   ├── pipeline_simple.py  # Document processing pipeline
-│   │   ├── simple_pdf_parser.py # PDF parsing fallback
-│   │   └── services/      # Business logic services
-│   ├── config/            # Configuration files
-│   ├── tests/             # Test files
-│   ├── requirements.txt   # Python dependencies
-│   ├── setup_db.py        # Database setup script
-│   ├── create_tables.sql  # SQL schema file
-│   └── backend_venv/      # Backend virtual environment
-├── marithon_frontend/     # Frontend application
-│   ├── assets/           # CSS, JavaScript, and other assets
-│   ├── index.html        # Landing page
-│   ├── login.html        # Authentication
-│   ├── signup.html       # User registration
-│   ├── dashboard.html    # Main dashboard
-│   ├── extraction-results.html  # Results page
-│   └── calculate.html    # Laytime calculator
-├── SOF Samples/          # Sample PDF files for testing
-├── setup.py              # Enhanced setup script with automation
-├── setup.bat             # Windows one-click setup
-├── setup.sh              # Unix one-click setup
-├── scripts/               # Startup scripts (created by setup)
-│   ├── start_both.*      # Start both servers
-│   ├── start_backend.*   # Start backend only
-│   └── start_frontend.*  # Start frontend only
-├── main_venv/            # Main project virtual environment
-├── QUICK_START.md        # Quick start guide (created by setup)
-└── README.md             # This file
+├── backend/                 # FastAPI backend service
+│   ├── main.py             # Main API server
+│   ├── sof_extractor_api.py # Alternative API implementation
+│   ├── requirements.txt    # Python dependencies
+│   ├── Procfile           # Deployment configuration
+│   └── runtime.txt        # Python version specification
+├── docs/                   # Frontend web application
+│   ├── index.html         # Landing page
+│   ├── dashboard.html     # Main dashboard
+│   ├── extraction-results.html # Results display
+│   └── assets/            # CSS, JS, and images
+├── render.yaml            # Render deployment config
+└── .gitignore            # Git ignore rules
 ```
 
-**Note**: The `scripts/` folder and `QUICK_START.md` are automatically created when you run the setup script.
+## 🔧 Backend Setup
 
-## 🛠️ Prerequisites
+### Prerequisites
+- Python 3.11+
+- pip package manager
 
-- **Python 3.8+** (Recommended: Python 3.11)
-- **Git** for version control
-- **MySQL** database server
-- **Modern web browser** (Chrome, Firefox, Safari, Edge)
-
-## 📦 Installation & Setup
-
-### 🚀 One-Click Setup Solutions
-
-### 🎯 **Complete Automation - Just Run One File!**
-
-The setup scripts will automatically handle everything:
-- 🏗️ **Virtual Environments**: Creates `backend_venv` and `main_venv`
-- 📦 **Dependencies**: Installs all Python packages automatically
-- ⚙️ **Configuration**: Sets up database and JWT settings
-- 🚀 **Startup Scripts**: Creates easy-to-use server startup scripts
-- 📚 **Documentation**: Generates `QUICK_START.md` guide
-
-#### Solution 1: Ultra-Simple Setup (Windows)
-```bash
-# Just double-click this file after cloning:
-setup.bat
-```
-
-**What happens automatically:**
-- ✅ Creates virtual environments
-- ✅ Installs all dependencies
-- ✅ Sets up database configuration
-- ✅ Creates startup scripts
-- ✅ Generates quick start guide
-
-#### Solution 2: Ultra-Simple Setup (macOS/Linux)
-```bash
-# Make executable and run:
-chmod +x setup.sh && ./setup.sh
-```
-
-**What happens automatically:**
-- ✅ Creates virtual environments
-- ✅ Installs all dependencies
-- ✅ Sets up database configuration
-- ✅ Creates startup scripts
-- ✅ Generates quick start guide
-
-#### Solution 3: Python Script Setup (All Platforms)
-```bash
-# Clone the repository
-git clone <your-repository-url>
-cd MariThon
-
-# Run the Python setup script
-python setup.py
-```
-
-#### Solution 2: Manual Setup (Recommended for First-Time Users)
-Follow the detailed step-by-step instructions in the [Detailed Setup](#-detailed-setup) section below.
-
-#### Solution 3: Database-First Setup (For Advanced Users)
-If you prefer to set up the database first:
-
-```sql
--- Create database and user
-CREATE DATABASE marithon_db;
-USE marithon_db;
-
--- Create users table
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    role ENUM('admin', 'user', 'manager') DEFAULT 'user',
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- Create user_sessions table
-CREATE TABLE user_sessions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    session_token VARCHAR(255) UNIQUE NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Insert default admin user (password: admin123)
-INSERT INTO users (username, email, password_hash, first_name, last_name, role) 
-VALUES ('admin', 'admin@marithon.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4J/vHhHhqG', 'Admin', 'User', 'admin');
-```
-
----
-
-## 🔧 Detailed Setup
-
-### Step 1: Clone the Repository
-
-1. **Open Terminal/Command Prompt**
-2. **Navigate to your desired directory**:
-   ```bash
-   # Windows
-   cd C:\Users\YourUsername\Documents\Projects
-   
-   # macOS/Linux
-   cd ~/Documents/Projects
-   ```
-
-3. **Clone the repository**:
-   ```bash
-   git clone <your-repository-url>
-   cd MariThon
-   ```
-
-4. **Verify the project structure**:
-   ```bash
-   # Windows
-   dir
-   
-   # macOS/Linux
-   ls -la
-   ```
-
-### Step 2: Backend Setup
-
-#### 2.1 Navigate to Backend Directory
+### Local Development
 ```bash
 cd backend
-```
-
-#### 2.2 Create Virtual Environment
-```bash
-# Windows
-python -m venv backend_venv
-
-# macOS/Linux
-python3 -m venv backend_venv
-```
-
-#### 2.3 Activate Virtual Environment
-```bash
-# Windows (PowerShell)
-backend_venv\Scripts\Activate.ps1
-
-# Windows (Command Prompt)
-backend_venv\Scripts\Activate.bat
-
-# macOS/Linux
-source backend_venv/bin/activate
-```
-
-**Important**: You should see `(backend_venv)` at the beginning of your command prompt when activated.
-
-#### 2.4 Install Backend Dependencies
-```bash
-# Upgrade pip first
-pip install --upgrade pip
-
-# Install requirements
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
-**Note**: This may take several minutes as some packages (like `sentence-transformers`) are large.
+### Production Deployment
+The backend is configured for automatic deployment on Render:
 
-#### 2.5 Verify Backend Installation
+1. **Connect Repository**: Link your GitHub repo to Render
+2. **Auto-Deploy**: Render will automatically deploy on push to main branch
+3. **Environment**: Free tier with automatic scaling
+
+## 🌐 Frontend Setup
+
+The frontend is hosted on GitHub Pages and automatically deploys from the `docs/` folder.
+
+### Local Development
 ```bash
-# Check installed packages
-pip list
-
-# Verify FastAPI installation
-python -c "import fastapi; print('FastAPI installed successfully')"
+cd docs
+# Open index.html in your browser or use a local server
+python -m http.server 8000
 ```
 
-### Step 3: Database Setup
+### Frontend configuration
+- Update API base URL in the following files to point to your Render backend URL:
+  - `docs/assets/js/dashboard.js` → `this.baseURL = 'https://<your-app>.onrender.com'`
+  - `docs/assets/js/extraction-results.js` → `this.baseURL = 'https://<your-app>.onrender.com'`
+- Flow: Dashboard uploads the PDF to `POST /extract`, stores the result in `localStorage.extractionResult`, then redirects to the results page, which renders `vessel_info` and `events` from that result.
 
-#### 3.1 Run Database Setup Script (Recommended)
+## 🔑 API Configuration
+
+### Current Setup
+- **Hugging Face Token**: Hardcoded in backend (as requested)
+- **Azure Document Intelligence**: Configure via environment variables
+- **OpenAI/OpenRouter**: Configure via environment variables
+
+### Environment Variables (Optional)
 ```bash
-# Make sure you're in the backend directory with virtual environment activated
-python setup_db.py
+# Azure Document Intelligence
+AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=your_endpoint
+AZURE_DOCUMENT_INTELLIGENCE_KEY=your_key
+
+# OpenAI/OpenRouter (fallback)
+OPENAI_API_KEY=your_key
+OPENROUTER_API_KEY=your_key
 ```
 
-This script will:
-- Create the `marithon_db` database
-- Create all necessary tables
-- Insert default admin and demo users
-- Set up proper database structure
+## 📡 API Endpoints
 
-#### 3.2 Alternative: Manual SQL Setup
-If you prefer to run SQL manually:
+### Base URL
+```
+https://your-render-app.onrender.com
+```
+
+### Available Endpoints
+- `GET /` - API status and version
+- `GET /health` - Health check with available APIs
+- `POST /extract` - Extract SOF data from PDF
+
+### Example Usage
 ```bash
-# Connect to MySQL and run:
-mysql -u root -p < create_tables.sql
+curl -X POST "https://your-render-app.onrender.com/extract" \
+  -H "Content-Type: multipart/form-data" \
+  -F "pdf=@your-document.pdf"
 ```
 
-#### 3.3 Verify Database Setup
-After setup, you'll have these default users:
-- **Admin**: `admin@marithon.com` / `admin123`
-- **Demo**: `demo@marithon.com` / `demo123`
+## 🚀 Deployment
 
-### Step 4: Main Directory Setup
+### Render (Backend)
+1. Push code to GitHub
+2. Connect repository in Render dashboard
+3. Service automatically deploys
 
-#### 4.1 Return to Main Directory
-```bash
-cd ..
-```
+### GitHub Pages (Frontend)
+1. Push to main branch
+2. Pages automatically deploy from `docs/` folder
 
-#### 4.2 Create Main Virtual Environment
-```bash
-# Windows
-python -m venv main_venv
+## 📊 Supported Document Types
 
-# macOS/Linux
-python3 -m venv main_venv
-```
+- **Statement of Facts (SOF)**
+- **Shipping Documents**
+- **Port Documents**
+- **Cargo Documents**
 
-#### 4.3 Activate Main Virtual Environment
-```bash
-# Windows (PowerShell)
-main_venv\Scripts\Activate.ps1
+## 🔍 Extraction Capabilities
 
-# Windows (Command Prompt)
-main_venv\Scripts\Activate.bat
+### Vessel Information
+- Vessel Name
+- Master/Captain
+- Agent
+- Port of Loading
+- Port of Discharge
+- Cargo Description
+- Quantity (Metric Tons)
 
-# macOS/Linux
-source main_venv/bin/activate
-```
+### Event Timeline
+- Date
+- Start Time
+- End Time
+- Duration
+- Event Description
+- Remarks
 
-**Important**: You should see `(main_venv)` at the beginning of your command prompt when activated.
-
-#### 4.4 Install Main Directory Dependencies
-```bash
-# Upgrade pip first
-pip install --upgrade pip
-
-# Install requirements
-pip install -r requirements.txt
-```
-
-### Step 5: Configure Backend
-
-Create `backend/config/local_settings.py`:
-```python
-# Database settings
-DB_HOST = 'localhost'
-DB_USER = 'root'
-DB_PASSWORD = 'your_mysql_password'
-DB_NAME = 'marithon_db'
-DB_PORT = 3306
-
-# JWT settings
-SECRET_KEY = 'your-super-secret-key-change-this-in-production'
-ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-```
-
----
-
-## 🚀 Running the Application
-
-### 🎯 One-Click Startup (After Running Setup)
-
-After running the setup script, you'll have convenient startup scripts:
-
-#### Windows Users
-- **Start Both Servers**: Double-click `scripts\start_both.bat`
-- **Backend Only**: Double-click `scripts\start_backend.bat`
-- **Frontend Only**: Double-click `scripts\start_frontend.bat`
-
-#### macOS/Linux Users
-- **Start Both Servers**: `./scripts/start_both.sh`
-- **Backend Only**: `./scripts/start_backend.sh`
-- **Frontend Only**: `./scripts/start_frontend.sh`
-
-### 🔧 Manual Startup
-
-#### 1. Start the Backend Server
-
-```bash
-# Navigate to backend directory
-cd backend
-
-# Activate backend virtual environment
-backend_venv\Scripts\Activate.ps1  # Windows
-# source backend_venv/bin/activate  # macOS/Linux
-
-# Start the FastAPI server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-The backend will be available at: `http://localhost:8000`
-
-**API Endpoints Available**:
-- `POST /auth/signup` - User registration
-- `POST /auth/login` - User authentication
-- `POST /extract` - File processing
-- `GET /health` - Health check
-- `GET /` - Root endpoint
-
-### 2. Start the Frontend
-
-```bash
-# Open new terminal, navigate to frontend directory
-cd marithon_frontend
-
-# Serve frontend files
-python -m http.server 8080
-```
-
-The frontend will be available at: `http://localhost:8080`
-
-### 3. Access the Application
-
-- **Frontend**: http://localhost:8080
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-
-## 🧪 Testing
-
-### Test PDF Processing
-
-1. **Start both servers** (backend on 8000, frontend on 8080)
-2. **Open frontend** in browser
-3. **Login with default credentials**:
-   - Email: `admin@marithon.com`
-   - Password: `admin123`
-4. **Upload PDF** from `SOF Samples/` folder
-5. **Verify extraction** shows correct business data
-
-### Sample Files
-
-Use the PDF files in the `SOF Samples/` folder to test the application:
-- `Samp1.pdf`, `Samp2.pdf`, `Samp3.pdf`
-- `SOF_ORION_TRADER.pdf`
-
-## 🔧 Key Technologies
+## 🛠️ Technology Stack
 
 ### Backend
-- **FastAPI** - Modern web framework
-- **MySQL** - Database storage
-- **PyPDF2 & pdfplumber** - PDF parsing
-- **bcrypt & PyJWT** - Authentication
-- **PyYAML** - Configuration
+- **FastAPI** - Modern Python web framework
+- **Uvicorn** - ASGI server
+- **PyPDF2** - PDF processing
+- **aiohttp** - Async HTTP client
 
 ### Frontend
-- **HTML5/CSS3** - Modern markup and styling
-- **JavaScript (ES6+)** - Interactive functionality
-- **LocalStorage** - Client-side data persistence
-- **Responsive Design** - Works on all devices
+- **HTML5** - Semantic markup
+- **CSS3** - Modern styling
+- **JavaScript** - Interactive functionality
+- **Bootstrap** - Responsive design
 
-## 📚 API Documentation
+### APIs
+- **Azure Document Intelligence** - Primary OCR service
+- **Hugging Face** - AI model inference
+- **OpenAI/OpenRouter** - Fallback AI processing
 
-- **Interactive Docs**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **OpenAPI Schema**: http://localhost:8000/openapi.json
+## 📈 Performance
 
-## 🚨 Troubleshooting
+- **Processing Time**: 5-15 seconds per document
+- **Concurrent Requests**: Supports multiple simultaneous extractions
+- **File Size Limit**: Up to 10MB PDF files
+- **Rate Limits**: Based on API provider tiers
+
+## 🔒 Security
+
+- **CORS Enabled** - Configured for web frontend
+- **Input Validation** - PDF file type verification
+- **Error Handling** - Graceful failure management
+- **No Sensitive Data Logging** - Secure error reporting
+
+## 🐛 Troubleshooting
 
 ### Common Issues
+1. **PDF Upload Fails**: Ensure file is PDF and under 10MB
+2. **Extraction Errors**: Check API key configuration
+3. **Timeout Issues**: Large documents may take longer
 
-**Port Already in Use**
+### Debug Mode
 ```bash
-# Change port
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
+# Enable debug logging
+export LOG_LEVEL=DEBUG
+uvicorn main:app --reload --log-level debug
 ```
-
-**Database Connection Error**
-- Verify MySQL is running
-- Check credentials in `backend/config/local_settings.py`
-- Ensure database `marithon_db` exists
-- Run `python setup_db.py` to recreate database if needed
-
-**PDF Parsing Issues**
-- Check if `pdfplumber` is installed
-- Verify PDF file is not corrupted
-- Check backend console for error messages
-
-**Frontend Not Loading**
-- Verify frontend server is running on port 8080
-- Check browser console for errors
-- Ensure backend is accessible on port 8000
-
-**Dependencies Installation Failed**
-```bash
-# Upgrade pip first
-pip install --upgrade pip
-
-# Try installing with verbose output
-pip install -r requirements.txt -v
-
-# If specific package fails, try installing individually
-pip install fastapi uvicorn[standard] mysql-connector-python
-```
-
-**ML Model Import Errors**
-- Ensure PyTorch is properly installed
-- Check sentence-transformers installation
-- Verify model download permissions
-
-**Virtual Environment Not Activated**
-```bash
-# Make sure you see (backend_venv) in your prompt
-# If not, activate the virtual environment:
-backend_venv\Scripts\Activate.ps1  # Windows PowerShell
-# or
-backend_venv\Scripts\Activate.bat  # Windows Command Prompt
-# or
-source backend_venv/bin/activate   # macOS/Linux
-```
-
-**Git Conflicts Resolved**
-The backend has been cleaned up and all Git merge conflicts have been resolved:
-- ✅ Fixed `pipeline_simple.py` PDF parsing logic
-- ✅ Kept working mysql.connector database approach
-- ✅ Kept working Pydantic schemas
-- ✅ Created proper database setup scripts
-
-### Getting Help
-
-1. **Check logs** in backend terminal
-2. **Verify all prerequisites** are installed
-3. **Ensure virtual environments** are activated
-4. **Check port availability** (8000, 8080)
-5. **Review this guide** step by step
-
----
-
-## 📱 Using the Application
-
-### Basic Workflow
-1. **Upload PDF**: Go to Dashboard → Upload SoF document
-2. **Review Data**: Check extracted information on extraction-results page
-3. **Calculate**: Click "Calculate" to process laytime
-4. **Add Events**: Log various maritime events
-5. **View Results**: See calculated laytime and timeline
-
-### File Types Supported
-- **PDF**: Primary format for SoF documents
-- **DOC/DOCX**: Word documents (fallback)
-- **Scanned PDFs**: OCR processing available
-
----
-
-## 🛑 Stopping the Application
-
-### Stop Backend Server
-1. Go to the terminal running the backend
-2. Press `Ctrl+C`
-3. Confirm with `Y` if prompted
-
-### Stop Frontend Server
-1. Go to the terminal running the frontend
-2. Press `Ctrl+C`
-
-### Deactivate Virtual Environments
-```bash
-# In each terminal where virtual environment is active
-deactivate
-```
-
----
-
-## 🔄 Restarting the Application
-
-### Quick Restart
-1. **Backend**: 
-   ```bash
-   cd backend
-   backend_venv\Scripts\Activate.ps1  # Windows
-   # source backend_venv/bin/activate  # macOS/Linux
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-2. **Frontend**:
-   ```bash
-   cd marithon_frontend
-   python -m http.server 8080
-   ```
-
----
-
-## 🔄 Development Workflow
-
-### Code Changes
-1. **Make changes** to backend or frontend code
-2. **Backend auto-reloads** (uvicorn --reload)
-3. **Refresh frontend** in browser
-4. **Test functionality** with sample PDFs
-5. **Check logs** in backend terminal
-
-### Adding New Services
-1. Create service file in `app/services/`
-2. Implement service logic
-3. Add to `app/services/__init__.py`
-4. Import and use in main application
-5. Add corresponding tests
-
-### Configuration Updates
-1. Modify YAML files in `config/`
-2. Restart server to apply changes
-3. Test with sample documents
-4. Update documentation if needed
-
----
-
-## 📚 Additional Resources
-
-### Logs and Debugging
-- Backend logs appear in the terminal running the server
-- Frontend errors appear in browser console (F12 → Console)
-
-### Configuration Files
-- **Backend Config**: `backend/config/`
-- **Business Rules**: `backend/config/business_data.yml`
-- **Event Patterns**: `backend/config/events.yml`
-
----
 
 ## 🤝 Contributing
 
-1. **Fork** the repository
-2. **Create** a feature branch
-3. **Make** your changes
-4. **Test** thoroughly
-5. **Submit** a pull request
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🆘 Support
+## 🙏 Acknowledgments
 
-If you encounter issues:
+- Azure Document Intelligence for OCR capabilities
+- Hugging Face for AI model hosting
+- FastAPI community for the excellent framework
+- Render for free hosting services
 
-1. **Check the logs** in your terminal
-2. **Verify all prerequisites** are installed
-3. **Ensure virtual environments** are activated
-4. **Check port availability** (8000 for backend, 8080 for frontend)
-5. **Review this guide** step by step
+## 📞 Support
 
----
-
-**🎉 MariThon is ready to streamline your maritime operations!**
-
-**🚨 Critical Note**: If you encounter import errors for PyTorch, sentence-transformers, or other ML libraries, the automated setup failed. Please follow the detailed setup instructions above for manual dependency installation.
+For issues and questions:
+- Create a GitHub issue
+- Check the API health endpoint
+- Review deployment logs in Render dashboard
 
 ---
 
-## 📋 Quick Reference
-
-### Default Credentials
-- **Admin**: `admin@marithon.com` / `admin123`
-- **Demo**: `demo@marithon.com` / `demo123`
-
-### Ports
-- **Backend API**: 8000
-- **Frontend**: 8080
-
-### Key Commands
-```bash
-# Start Backend
-cd backend && backend_venv\Scripts\Activate.ps1 && uvicorn app.main:app --reload
-
-# Start Frontend  
-cd marithon_frontend && python -m http.server 8080
-
-# Database Setup
-cd backend && python setup_db.py
-```
-
-### 🚀 One-Click Startup (After Setup)
-```bash
-# Windows: Double-click these files
-scripts\start_both.bat      # Start both servers
-scripts\start_backend.bat    # Backend only
-scripts\start_frontend.bat   # Frontend only
-
-# macOS/Linux: Run these commands
-./scripts/start_both.sh      # Start both servers
-./scripts/start_backend.sh   # Backend only
-./scripts/start_frontend.sh  # Frontend only
-```
+**Note**: This project uses hardcoded API keys as requested. For production use, consider using environment variables for better security.

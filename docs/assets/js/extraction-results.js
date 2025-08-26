@@ -9,11 +9,9 @@ class ExtractionResults {
     }
 
     init() {
-        this.checkAuth();
-        this.getDocumentIdFromURL();
         this.setupEventListeners();
         this.updateUserProfile();
-        this.loadDocumentData();
+        this.loadFromStoredResult();
     }
 
     // Authentication check
@@ -75,275 +73,87 @@ class ExtractionResults {
         }
     }
 
-    // Load document data and process
-    async loadDocumentData() {
-        if (!this.documentId) return;
-
-        this.showLoading('Loading document data...');
-
+    // Load result saved by dashboard after /extract
+    loadFromStoredResult() {
+        const raw = localStorage.getItem('extractionResult');
+        if (!raw) {
+            this.showError('No extraction result found. Please upload a PDF first.');
+            setTimeout(() => window.location.href = 'dashboard.html', 1200);
+            return;
+        }
         try {
-            // Run OCR first
-            await this.runOCR();
-            
-            // Extract clauses
-            await this.extractClauses();
-            
-            // Generate summary
-            await this.generateSummary();
-            
-            // Populate form with extracted data
-            this.populateFormWithExtractedData();
-            
-            // Populate events table
-            this.populateEventsTable();
-            
-        } catch (error) {
-            console.error('Error loading document data:', error);
-            this.showError('Failed to load document data');
-        } finally {
-            this.hideLoading();
+            const result = JSON.parse(raw);
+            this.renderFromBackendResult(result);
+        } catch (e) {
+            console.warn('Failed to parse extractionResult from localStorage:', raw);
+            localStorage.removeItem('extractionResult');
+            this.showError('Invalid result data. Please re-upload your PDF.');
+            setTimeout(() => window.location.href = 'dashboard.html', 1200);
         }
     }
 
-    // Run OCR
-    async runOCR() {
-        try {
-            const response = await fetch(`${this.baseURL}/ocr/${this.documentId}`, {
-                method: 'POST',
-                headers: this.getAuthHeaders()
-            });
+    // Deprecated: no longer used in new flow
+    async runOCR() { return; }
 
-            if (!response.ok) {
-                throw new Error('OCR failed');
-            }
+    async extractClauses() { return; }
 
-            const data = await response.json();
-            this.vesselData.ocrText = data.raw_text;
-            
-        } catch (error) {
-            console.error('OCR error:', error);
-            throw error;
-        }
-    }
+    async generateSummary() { return; }
 
-    // Extract clauses
-    async extractClauses() {
-        try {
-            const response = await fetch(`${this.baseURL}/clauses/${this.documentId}`, {
-                method: 'POST',
-                headers: this.getAuthHeaders()
-            });
-
-            if (!response.ok) {
-                throw new Error('Clause extraction failed');
-            }
-
-            const data = await response.json();
-            this.vesselData.clauses = data;
-            
-        } catch (error) {
-            console.error('Clause extraction error:', error);
-            throw error;
-        }
-    }
-
-    // Generate summary
-    async generateSummary() {
-        try {
-            const response = await fetch(`${this.baseURL}/summaries/${this.documentId}`, {
-                method: 'POST',
-                headers: this.getAuthHeaders()
-            });
-
-            if (!response.ok) {
-                throw new Error('Summary generation failed');
-            }
-
-            const data = await response.json();
-            this.vesselData.summary = data.summary_text;
-            
-        } catch (error) {
-            console.error('Summary generation error:', error);
-            throw error;
-        }
-    }
-
-    // Populate form with extracted data
-    populateFormWithExtractedData() {
-        // Extract vessel information from OCR text and clauses
-        const ocrText = this.vesselData.ocrText || '';
-        const clauses = this.vesselData.clauses || [];
-
-        // Parse vessel name (common patterns)
-        const vesselMatch = ocrText.match(/M\.?V\.?\s*([A-Z\s]+)/i) || 
-                           ocrText.match(/VESSEL[:\s]+([A-Z\s]+)/i);
-        if (vesselMatch) {
-            document.getElementById('vessel-name').value = vesselMatch[1].trim();
-        }
-
-        // Parse master/captain
-        const masterMatch = ocrText.match(/CAPTAIN[:\s]+([A-Z\s\.]+)/i) ||
-                           ocrText.match(/MASTER[:\s]+([A-Z\s\.]+)/i);
-        if (masterMatch) {
-            document.getElementById('master').value = masterMatch[1].trim();
-        }
-
-        // Parse ports from clauses
-        clauses.forEach(clause => {
-            if (clause.clause_type === 'Arrival') {
-                const portMatch = clause.extracted_text.match(/at\s+([^,]+)/i);
-                if (portMatch) {
-                    document.getElementById('port-loading').value = portMatch[1].trim();
-                }
-            }
+    // Render backend /extract result into form and events table
+    renderFromBackendResult(result) {
+        const vessel = (result && result.vessel_info) || {};
+        const fieldMap = {
+            'Vessel Name': 'vessel-name',
+            'Master': 'master',
+            'Agent': 'agent',
+            'Port of Loading': 'port-loading',
+            'Port of Discharge': 'port-discharge',
+            'Cargo': 'cargo',
+            'Quantity (MT)': 'quantity'
+        };
+        Object.keys(fieldMap).forEach((k) => {
+            const el = document.getElementById(fieldMap[k]);
+            if (el) el.value = vessel[k] || '';
         });
 
-        // Parse cargo information
-        const cargoMatch = ocrText.match(/CARGO[:\s]+([A-Z\s]+)/i);
-        if (cargoMatch) {
-            document.getElementById('cargo').value = cargoMatch[1].trim();
-        }
+        // Calculator defaults if empty
+        const allowed = document.getElementById('allowed-laytime');
+        const dem = document.getElementById('demurrage');
+        const disp = document.getElementById('dispatch');
+        if (allowed && !allowed.value) allowed.value = '5';
+        if (dem && !dem.value) dem.value = '5000';
+        if (disp && !disp.value) disp.value = '2500';
 
-        // Parse quantity
-        const qtyMatch = ocrText.match(/(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*(?:MT|TONS?)/i);
-        if (qtyMatch) {
-            document.getElementById('quantity').value = qtyMatch[1].replace(/,/g, '');
-        }
-
-        // Set default values for laytime calculations
-        document.getElementById('allowed-laytime').value = '5';
-        document.getElementById('demurrage').value = '5000';
-        document.getElementById('dispatch').value = '2500';
-    }
-
-    // Populate events table with extracted events
-    populateEventsTable() {
-        // Create sample events based on typical SOF structure
-        this.events = [
-            {
-                description: 'Vessel Arrived at Anchorage',
-                date: '2024-06-08',
-                startTime: '16:00',
-                endTime: '',
-                duration: '',
-                remarks: 'Arrival'
-            },
-            {
-                description: 'NOR Tendered',
-                date: '2024-06-08',
-                startTime: '17:30',
-                endTime: '',
-                duration: '',
-                remarks: 'Notice of Readiness'
-            },
-            {
-                description: 'Free Pratique Granted',
-                date: '2024-06-09',
-                startTime: '09:00',
-                endTime: '',
-                duration: '',
-                remarks: ''
-            },
-            {
-                description: 'Hatch Cleaning',
-                date: '2024-06-09',
-                startTime: '11:00',
-                endTime: '',
-                duration: '',
-                remarks: 'Cleaning operation'
-            },
-            {
-                description: 'Loading Bags (1st shift)',
-                date: '2024-06-10',
-                startTime: '09:00',
-                endTime: '12:00',
-                duration: '3h',
-                remarks: ''
-            },
-            {
-                description: 'Loading Bags (2nd shift)',
-                date: '2024-06-10',
-                startTime: '13:00',
-                endTime: '18:00',
-                duration: '5h',
-                remarks: ''
-            },
-            {
-                description: 'Loading Bags',
-                date: '2024-06-10',
-                startTime: '18:00',
-                endTime: '24:00',
-                duration: '6h',
-                remarks: ''
-            },
-            {
-                description: 'Loading Interrupted',
-                date: '2024-06-11',
-                startTime: '13:00',
-                endTime: '15:00',
-                duration: '2h',
-                remarks: 'Stopped due to rain'
-            },
-            {
-                description: 'Loading Interrupted',
-                date: '2024-06-11',
-                startTime: '18:00',
-                endTime: '24:00',
-                duration: '6h',
-                remarks: 'Crane #2 breakdown'
-            },
-            {
-                description: 'Loading Bags',
-                date: '2024-06-12',
-                startTime: '09:00',
-                endTime: '17:00',
-                duration: '7h',
-                remarks: ''
-            },
-            {
-                description: 'Loading Bags',
-                date: '2024-06-13',
-                startTime: '08:00',
-                endTime: '18:00',
-                duration: '9h',
-                remarks: ''
-            },
-            {
-                description: 'Loading Bags',
-                date: '2024-06-14',
-                startTime: '08:00',
-                endTime: '16:00',
-                duration: '7h',
-                remarks: ''
-            },
-            {
-                description: 'Loading Bags',
-                date: '2024-06-14',
-                startTime: '16:00',
-                endTime: '22:00',
-                duration: '6h',
-                remarks: ''
-            },
-            {
-                description: 'Hatches Completed',
-                date: '2024-06-24',
-                startTime: '18:00',
-                endTime: '22:00',
-                duration: '4h',
-                remarks: 'Hatch #2, #3 complete'
-            },
-            {
-                description: 'Final Loading',
-                date: '2024-06-25',
-                startTime: '08:00',
-                endTime: '16:30',
-                duration: '7.5h',
-                remarks: ''
-            }
-        ];
+        const backendEvents = Array.isArray(result && result.events) ? result.events : [];
+        this.events = backendEvents.map((ev) => ({
+            description: ev['Event Description'] || '-',
+            date: this.normalizeDateForInput(ev['Date']),
+            startTime: ev['Start Time'] && ev['Start Time'] !== '-' ? ev['Start Time'] : '',
+            endTime: ev['End Time'] && ev['End Time'] !== '-' ? ev['End Time'] : '',
+            duration: ev['Duration'] && ev['Duration'] !== '-' ? ev['Duration'] : '',
+            remarks: ev['Remarks'] && ev['Remarks'] !== '-' ? ev['Remarks'] : ''
+        }));
 
         this.renderEventsTable();
     }
+
+    // Convert "08 Jun 2024" to "2024-06-08" for input/date parsing
+    normalizeDateForInput(d) {
+        if (!d || d === '-') return '';
+        const parts = String(d).trim().split(/\s+/);
+        if (parts.length !== 3) return d;
+        const [dd, mon, yyyy] = parts;
+        const monthMap = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+        const mm = monthMap[mon] || monthMap[mon?.slice(0,3)] || '01';
+        const day = dd.padStart(2, '0');
+        return `${yyyy}-${mm}-${day}`;
+    }
+
+    // Populate form with extracted data
+    populateFormWithExtractedData() { /* deprecated */ }
+
+    // Populate events (handled in renderFromBackendResult now)
+    populateEventsTable() { this.renderEventsTable(); }
 
     // Render events table
     renderEventsTable() {
@@ -376,7 +186,9 @@ class ExtractionResults {
 
     // Format date for display
     formatDate(dateString) {
+        if (!dateString) return '–';
         const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '–';
         return date.toLocaleDateString('en-GB', {
             day: '2-digit',
             month: 'short',
