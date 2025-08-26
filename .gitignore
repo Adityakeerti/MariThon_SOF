@@ -179,8 +179,8 @@ $RECYCLE.BIN/
 *~
 
 # Render deployment
-render.yaml
-render.yml
+# render.yaml
+# render.yml
 
 # Logs
 *.log
