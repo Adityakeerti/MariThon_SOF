@@ -14,7 +14,8 @@ requests==2.31.0
 PyPDF2==3.0.1
 
 # Data processing and validation
-pydantic==2.5.0
+# Use only Pydantic (it will pull the right pydantic-core wheel automatically)
+pydantic==2.8.2
 
 # Date/time handling
 python-dateutil==2.8.2
@@ -24,7 +25,3 @@ fastapi-cors==0.0.6
 
 # Environment variables
 python-dotenv==1.0.1
-
-pydantic==2.5.0
-pydantic-core==2.14.6
-
