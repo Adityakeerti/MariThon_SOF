@@ -117,26 +117,14 @@
             showMessage('Creating account...', 'loading');
             
             try {
-                const response = await fetch('http://127.0.0.1:8000/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                if (response.ok) {
-                    showMessage('Account created successfully! Redirecting to login...', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
-                } else {
-                    const error = await response.json();
-                    showMessage(`Signup failed: ${error.detail}`, 'error');
-                }
+                // Local-only signup (no backend): pretend success
+                showMessage('Account created successfully! Redirecting to login...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1200);
             } catch (error) {
                 console.error('Signup error:', error);
-                showMessage('Signup failed. Please check your connection and try again.', 'error');
+                showMessage('Signup failed. Please try again.', 'error');
             } finally {
                 submitBtn.classList.remove('loading');
             }

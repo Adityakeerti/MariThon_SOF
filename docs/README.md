@@ -69,11 +69,13 @@ frontend/
 
 ## API Integration
 
-### Backend Endpoints Used
-- `POST /register` - User registration
-- `POST /login` - User authentication (OAuth2 form)
-- `POST /documents/upload` - File upload
-- `POST /ocr/{document_id}` - Run OCR
+### Authentication
+The demo uses a simple local JSON check on the frontend only. Sample user:
+
+- username: `user`
+- password: `user123`
+
+No database or backend auth endpoints are used for login/signup in this demo.
 - `POST /clauses/{document_id}` - Extract clauses
 - `POST /summaries/{document_id}` - Generate summary
 

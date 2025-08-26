@@ -1,9 +1,11 @@
 // Authentication service
 class AuthService {
     constructor() {
-        this.baseURL = 'http://localhost:8000';
         this.tokenKey = 'auth_token';
         this.userKey = 'user_data';
+        this.validUsers = [
+            { username: 'user', password: 'user123' }
+        ];
     }
 
     // Store authentication data
@@ -37,22 +39,14 @@ class AuthService {
     // Login user
     async login(username, password) {
         try {
-            const response = await fetch(`${this.baseURL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password })
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Login failed');
+            const matched = this.validUsers.find(u => u.username === username && u.password === password);
+            if (!matched) {
+                throw new Error('Invalid username or password');
             }
-
-            const data = await response.json();
-            this.setAuth(data.access_token, data.user);
-            return { success: true, user: data.user };
+            const fakeToken = 'dummy-token-123';
+            const user = { username };
+            this.setAuth(fakeToken, user);
+            return { success: true, user };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -61,27 +55,11 @@ class AuthService {
     // Signup user
     async signup(username, email, password, first_name, last_name) {
         try {
-            const response = await fetch(`${this.baseURL}/auth/signup`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username,
-                    email,
-                    password,
-                    first_name,
-                    last_name
-                })
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Signup failed');
+            if (!username || !password) {
+                throw new Error('Username and password are required');
             }
-
-            const data = await response.json();
-            return { success: true, message: data.message };
+            // Local-only: pretend account created successfully
+            return { success: true, message: 'Account created locally' };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -90,15 +68,7 @@ class AuthService {
     // Logout user
     async logout() {
         try {
-            const token = this.getToken();
-            if (token) {
-                await fetch(`${this.baseURL}/auth/logout`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-            }
+            // Local-only: just clear
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
@@ -111,24 +81,8 @@ class AuthService {
     async getCurrentUser() {
         try {
             const token = this.getToken();
-            if (!token) {
-                return null;
-            }
-
-            const response = await fetch(`${this.baseURL}/auth/me`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                this.clearAuth();
-                return null;
-            }
-
-            const user = await response.json();
-            localStorage.setItem(this.userKey, JSON.stringify(user));
-            return user;
+            if (!token) return null;
+            return this.getUser();
         } catch (error) {
             console.error('Get user error:', error);
             this.clearAuth();

@@ -78,25 +78,15 @@ async function handleLoginSubmit(event) {
     try {
         console.log('Making API call to login endpoint...');
         
-        // Call the backend API
-        const response = await fetch('http://localhost:8000/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-        });
+        // Local JSON-only auth: accept user/user123
+        const isValid = (email === 'user' && password === 'user123');
         
-        console.log('Response received:', response.status, response.ok);
-        console.log('Response headers:', response.headers);
+        console.log('Local auth check result:', isValid);
         
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Login successful, data:', data);
-            
-            // Store authentication data
-            localStorage.setItem('auth_token', data.access_token);
-            localStorage.setItem('user_data', JSON.stringify(data.user));
+        if (isValid) {
+            // Store authentication data (fake token)
+            localStorage.setItem('auth_token', 'dummy-token-123');
+            localStorage.setItem('user_data', JSON.stringify({ username: 'user' }));
             console.log('Auth data stored in localStorage');
             
             // Show success message and redirect
@@ -130,9 +120,7 @@ async function handleLoginSubmit(event) {
                 }
             }, 1500);
         } else {
-            const error = await response.json();
-            console.log('Login failed with error:', error);
-            showMessage(`Login failed: ${error.detail}`, 'error');
+            showMessage('Login failed: Invalid username or password', 'error');
         }
     } catch (error) {
         console.error('Login error:', error);
@@ -191,19 +179,8 @@ async function handleSignupSubmit(event) {
     submitBtn.classList.add('loading');
     
     try {
-        // Call the backend API
-        const response = await fetch('http://localhost:8000/auth/signup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                email,
-                password,
-                first_name: firstName,
-                last_name: lastName
-            })
-        });
+        // Local-only signup: pretend success
+        const response = { ok: true, json: async () => ({ message: 'ok' }) };
         
         if (response.ok) {
             const data = await response.json();
@@ -214,8 +191,7 @@ async function handleSignupSubmit(event) {
                 window.location.href = 'login.html';
             }, 1500);
         } else {
-            const error = await response.json();
-            showMessage(`Account not created: ${error.detail}`, 'error');
+            showMessage('Account not created: local error', 'error');
         }
     } catch (error) {
         console.error('Signup error:', error);
