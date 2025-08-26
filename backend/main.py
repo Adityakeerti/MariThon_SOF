@@ -1,10 +1,13 @@
 from fastapi import FastAPI, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 import os, re, io, json, asyncio, aiohttp
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from PyPDF2 import PdfReader
 
+# Load environment variables
+load_dotenv()
 
 app = FastAPI(title="SOF Document Extractor", version="2.0.0")
 
@@ -19,8 +22,8 @@ app.add_middleware(
 # ---- Config ----
 AZURE_ENDPOINT = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")
 AZURE_KEY = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_KEY")
-# Hardcoded Hugging Face token (requested)
-HF_TOKEN = "HF_TOKEN"
+# Hugging Face token from environment variable
+HF_TOKEN = os.getenv("HF_API_TOKEN")
 
 if not HF_TOKEN:
     print("[WARN] HF_API_TOKEN is not set. Hugging Face features may be disabled.")

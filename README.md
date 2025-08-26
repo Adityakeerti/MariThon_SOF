@@ -75,12 +75,10 @@ python -m http.server 8000
 
 ## 🔑 API Configuration
 
-### Current Setup
-- **Hugging Face Token**: Hardcoded in backend (as requested)
-- **Azure Document Intelligence**: Configure via environment variables
-- **OpenAI/OpenRouter**: Configure via environment variables
+### Required Environment Variables
+- **HF_API_TOKEN**: Your Hugging Face API token (required for PDF extraction)
 
-### Environment Variables (Optional)
+### Optional Environment Variables
 ```bash
 # Azure Document Intelligence
 AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=your_endpoint
@@ -90,6 +88,15 @@ AZURE_DOCUMENT_INTELLIGENCE_KEY=your_key
 OPENAI_API_KEY=your_key
 OPENROUTER_API_KEY=your_key
 ```
+
+### Local Development Setup
+1. Copy `backend/env.example` to `backend/.env`
+2. Fill in your actual API keys
+3. Never commit `.env` files to version control
+
+### Production Deployment
+- Environment variables are configured in `render.yaml` for Render deployment
+- For other platforms, set the required environment variables in your deployment dashboard
 
 ## 📡 API Endpoints
 

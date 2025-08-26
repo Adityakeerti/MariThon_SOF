@@ -8,12 +8,15 @@ import requests
 import base64
 import json
 import os
+from dotenv import load_dotenv
 from datetime import datetime
 import re
 from typing import Dict, List, Optional
 import asyncio
 import aiohttp
 
+# Load environment variables
+load_dotenv()
 
 app = FastAPI(title="SOF Document Extractor", version="2.0.0")
 
@@ -39,7 +42,7 @@ class APIConfig:
         self.google_credentials = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
         
         # Hugging Face (hardcoded token as requested)
-        self.hf_token = "HF_TOKEN"
+        self.hf_token = os.getenv("HF_API_TOKEN")
         
         # OpenAI/OpenRouter (Fallback)
         self.openai_key = os.getenv("OPENAI_API_KEY")

@@ -74,6 +74,7 @@ cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
 ### Environment Variables
 - `PORT`: Automatically set by Render
 - `PYTHON_VERSION`: 3.11.0
+- `HF_API_TOKEN`: Your Hugging Face API token (configured in render.yaml)
 
 ## 🧪 Test Your Deployment
 
@@ -208,12 +209,13 @@ pip check
 - ✅ CORS enabled for web frontend
 - ✅ Input validation on PDF uploads
 - ✅ No sensitive data in logs
-- ⚠️ API keys hardcoded (as requested)
+- ✅ API keys stored as environment variables (secure)
 
 ### Production Recommendations
-- Use environment variables for secrets
-- Implement rate limiting
-- Add authentication if needed
+- ✅ Environment variables are properly configured
+- ✅ HF_API_TOKEN is set in render.yaml
+- ✅ No hardcoded secrets in source code
+- Consider implementing rate limiting if needed
 - Use HTTPS (automatic on Render)
 
 ## 📞 Support
