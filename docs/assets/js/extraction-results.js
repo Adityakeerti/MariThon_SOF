@@ -1,7 +1,7 @@
 // Extraction Results JavaScript - Complete SOF Processing Workflow
 class ExtractionResults {
     constructor() {
-        this.baseURL = 'http://127.0.0.1:8000';
+        this.baseURL = 'https://marithon-sof-backend.onrender.com';
         this.documentId = null;
         this.vesselData = {};
         this.events = [];

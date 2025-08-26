@@ -1,7 +1,7 @@
 // Dashboard JavaScript with FastAPI Integration
 class DashboardAPI {
     constructor() {
-        this.baseURL = 'http://127.0.0.1:8000';
+        this.baseURL = 'https://marithon-sof-backend.onrender.com';
         this.currentDocumentId = null;
         this.currentFile = null;
         this.init();
