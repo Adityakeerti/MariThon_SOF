@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from PyPDF2 import PdfReader
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+load_dotenv()
 
 app = FastAPI(title="SOF Document Extractor", version="2.0.0")
 
@@ -21,13 +21,16 @@ app.add_middleware(
 # ---- Config ----
 AZURE_ENDPOINT = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")
 AZURE_KEY = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_KEY")
-# Prefer env vars, but fall back to provided key if none found
+# Prefer env vars; no hardcoded fallback
 HF_TOKEN = (
-    os.getenv("HUGGINGFACE_TOKEN")
+    os.getenv("HF_API_TOKEN")
+    or os.getenv("HUGGINGFACE_TOKEN")
     or os.getenv("HUGGINGFACEHUB_API_TOKEN")
     or os.getenv("HF_TOKEN")
-    or "HF_TOKEN"
 )
+
+if not HF_TOKEN:
+    print("[WARN] HF_API_TOKEN is not set. Hugging Face features may be disabled.")
 
 # ---- Helpers ----
 def norm_time(t: str) -> str:
@@ -224,4 +227,4 @@ async def extract(pdf: UploadFile):
             pass
 
     # 3) If nothing configured
-    raise HTTPException(500, "No working API configured. Add HUGGINGFACE_TOKEN or Azure keys in .env.")
+    raise HTTPException(500, "No working API configured. Set HF_API_TOKEN or Azure keys in .env.")
