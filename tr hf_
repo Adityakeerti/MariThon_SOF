@@ -1,0 +1,22 @@
+[35mbackend/env.example[m[36m:[mHF_API_TOKEN=[1;31mhf_[myour_token_here
+[35mbackend/main.py[m[36m:[masync def [1;31mhf_[mextract(pdf_bytes: bytes) -> Optional[Dict]:
+[35mbackend/main.py[m[36m:[m            return await [1;31mhf_[mextract(pdf_bytes)
+[35mbackend/sof_extractor_api.py[m[36m:[m        self.[1;31mhf_[mtoken = os.getenv("HF_API_TOKEN")
+[35mbackend/sof_extractor_api.py[m[36m:[m        self.token = config.[1;31mhf_[mtoken
+[35mbackend/sof_extractor_api.py[m[36m:[m    if config.[1;31mhf_[mtoken:
+[35mbackend/sof_extractor_api.py[m[36m:[m    if config.[1;31mhf_[mtoken:
+[35msetup_env.py[m[36m:[m    [1;31mhf_[mtoken = input("HF_API_TOKEN: ").strip()
+[35msetup_env.py[m[36m:[m    if not [1;31mhf_[mtoken:
+[35msetup_env.py[m[36m:[m    content = content.replace("[1;31mhf_[myour_token_here", [1;31mhf_[mtoken)
+[35msetup_env.py[m[36m:[m    print(f"🔑 HF_API_TOKEN set to: {[1;31mhf_[mtoken[:10]}...")
+[35mbackend/env.example[m[36m:[mHF_API_TOKEN=[1;31mhf_[myour_token_here
+[35mbackend/main.py[m[36m:[masync def [1;31mhf_[mextract(pdf_bytes: bytes) -> Optional[Dict]:
+[35mbackend/main.py[m[36m:[m            return await [1;31mhf_[mextract(pdf_bytes)
+[35mbackend/sof_extractor_api.py[m[36m:[m        self.[1;31mhf_[mtoken = os.getenv("HF_API_TOKEN")
+[35mbackend/sof_extractor_api.py[m[36m:[m        self.token = config.[1;31mhf_[mtoken
+[35mbackend/sof_extractor_api.py[m[36m:[m    if config.[1;31mhf_[mtoken:
+[35mbackend/sof_extractor_api.py[m[36m:[m    if config.[1;31mhf_[mtoken:
+[35msetup_env.py[m[36m:[m    [1;31mhf_[mtoken = input("HF_API_TOKEN: ").strip()
+[35msetup_env.py[m[36m:[m    if not [1;31mhf_[mtoken:
+[35msetup_env.py[m[36m:[m    content = content.replace("[1;31mhf_[myour_token_here", [1;31mhf_[mtoken)
+[35msetup_env.py[m[36m:[m    print(f"🔑 HF_API_TOKEN set to: {[1;31mhf_[mtoken[:10]}...")
