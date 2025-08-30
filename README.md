@@ -12,7 +12,7 @@ A modern web application for extracting Statement of Facts (SOF) data from shipp
 
 ## 🚀 Live Demo
 
-- **Frontend**: [GitHub Pages](https://yourusername.github.io/MariThon)
+- **Frontend** : [GitHub Pages](https://yourusername.github.io/MariThon)
 - **Backend API**: [Render](https://your-render-app.onrender.com)
 
 ## 🏗️ Architecture
